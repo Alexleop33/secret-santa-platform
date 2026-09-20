@@ -1,0 +1,22 @@
+name: Require linked issue
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Look for a closing keyword
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          PATTERN='([Cc]lose[sd]?|[Ff]ixe?[sd]?|[Rr]esolve[sd]?)[[:space:]]+((https://github\.com/[^/]+/[^/]+/issues/[0-9]+)|([A-Za-z0-9._-]+/[A-Za-z0-9._-]+)?#[0-9]+)'
+          if printf '%s\n%s' "$TITLE" "$BODY" | grep -Eq "$PATTERN"; then
+            echo "✓ Linked issue found."
+            exit 0
+          fi
+          echo "✗ No linked issue. Add 'Closes #12' or 'Closes OWNER/repo#12'."
+          exit 1

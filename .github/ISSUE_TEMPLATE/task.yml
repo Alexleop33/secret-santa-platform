@@ -1,0 +1,32 @@
+name: Task
+description: One unit of work. Lives under an Epic.
+title: "[Task] "
+labels: ["type:task"]
+body:
+  - type: input
+    id: parent
+    attributes:
+      label: Parent Epic
+      placeholder: "#7"
+    validations: { required: true }
+  - type: textarea
+    id: what
+    attributes:
+      label: What needs doing
+      description: One sitting's worth. If it's more, it's an Epic.
+    validations: { required: true }
+  - type: textarea
+    id: done
+    attributes:
+      label: How we'll know it's done
+    validations: { required: true }
+  - type: checkboxes
+    id: risk
+    attributes:
+      label: Does this touch any of these?
+      description: Any tick means stop and flag before starting.
+      options:
+        - label: Auth or sessions
+        - label: PII (household data, emails)
+        - label: Payments
+        - label: Deleting or purging data

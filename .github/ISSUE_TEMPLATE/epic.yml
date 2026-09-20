@@ -1,0 +1,48 @@
+name: Epic
+description: A slice of a Story, sized for engineering. Only after the Story is Ready.
+title: "[Epic] "
+labels: ["type:epic"]
+body:
+  - type: input
+    id: parent
+    attributes:
+      label: Parent Story
+      description: >
+        Full URL. Cross-repo works only if both repos are in the same org.
+        Otherwise paste it here and set the Project's "Story" field to match.
+      placeholder: https://github.com/Alexleop33/secret-santa-product/issues/12
+    validations: { required: true }
+  - type: textarea
+    id: slice
+    attributes:
+      label: What this slice covers
+      description: schema + policy + API + UI + a test, for ONE user action.
+    validations: { required: true }
+  - type: textarea
+    id: which-criteria
+    attributes:
+      label: Which acceptance criteria does this satisfy?
+      description: Copy the specific lines from the parent Story.
+    validations: { required: true }
+  - type: textarea
+    id: approach
+    attributes:
+      label: Approach
+      description: How we're building it, and the alternative we rejected.
+    validations: { required: true }
+  - type: textarea
+    id: breaks
+    attributes:
+      label: What could break
+    validations: { required: true }
+  - type: checkboxes
+    id: dod
+    attributes:
+      label: Definition of Done
+      options:
+        - label: Migration applied
+        - label: Access rules written AND tested (a test proving denial)
+        - label: Happy path works
+        - label: At least one failure path handled
+        - label: I can explain this code out loud
+        - label: Parent Story's criteria re-checked

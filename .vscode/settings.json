@@ -1,0 +1,18 @@
+{
+  "window.title": "⚙ PLATFORM — ${activeEditorShort}${separator}${rootName}",
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#1D76DB",
+    "titleBar.activeForeground": "#FFFFFF",
+    "titleBar.inactiveBackground": "#1D76DB99",
+    "titleBar.inactiveForeground": "#FFFFFFCC",
+    "statusBar.background": "#155FAF",
+    "statusBar.foreground": "#FFFFFF",
+    "activityBar.background": "#155FAF",
+    "activityBar.foreground": "#FFFFFF"
+  },
+  "editor.formatOnSave": true,
+  "editor.rulers": [80],
+  "files.eol": "\n",
+  "search.exclude": { "**/node_modules": true, "**/dist": true },
+  "git.autofetch": true
+}

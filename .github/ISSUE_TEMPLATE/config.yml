@@ -1,0 +1,7 @@
+blank_issues_enabled: false
+contact_links:
+  - name: New Story (product decisions, scope, "should we build X")
+    url: https://github.com/Alexleop33/secret-santa-product/issues/new/choose
+    about: >
+      What to build and why is decided in the product repo. Open a Story
+      there first — an Epic without a Ready parent Story gets closed.

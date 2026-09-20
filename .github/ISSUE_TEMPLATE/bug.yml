@@ -1,0 +1,35 @@
+name: Bug
+description: Something is broken.
+title: "[Bug] "
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+    validations: { required: true }
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happens instead
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations: { required: true }
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "Blocks a deadline"
+        - "Wrong data shown or saved"
+        - "Annoying but has a workaround"
+        - "Cosmetic"
+    validations: { required: true }
+  - type: input
+    id: story
+    attributes:
+      label: Which Story's acceptance criteria does this violate?
+      description: Blank if none.
