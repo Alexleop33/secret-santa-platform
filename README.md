@@ -15,6 +15,10 @@ An Epic whose parent Story isn't Ready gets closed.
   reference code and a story. No photos, ever.
 - **RLS on every table from the first migration.** Default deny. No table
   ships without a policy and a test proving denial.
+- **This repo is public on purpose.** Nothing in source control that would
+  be embarrassing to a stranger: no real data, no secrets, no prod dumps.
+  Seeds are synthetic. Sandbox and prod are separate projects with separate
+  keys.
 - **Never roll our own auth.** Donors sign in by emailed magic link.
 - **Payments go through a Stripe link.** We never touch card data.
 - **The app must never be the single point of failure.** If it breaks in

@@ -43,6 +43,31 @@ story. **No photos, ever** (see the product repo's decisions.md for why).
 
 Caseworker and donor **emails** are fine — needed for login.
 
+Policy alone won't hold. A caseworker in a hurry will type "Maria, 412 Oak St"
+into a notes field unless the form makes that awkward — field design,
+placeholders, validation. When you build the referral form, prevention is part
+of the slice, not a follow-up.
+
+## Hard rule: this repo is public
+
+Both repos are public **on purpose**. It's a forcing function, not an
+oversight: if something would be embarrassing in a public repo, the system
+shouldn't hold it.
+
+What that means every single commit:
+
+- **No real data.** Seeds and fixtures are synthetic and obviously fake —
+  `#14`, "boy, 7". Never a real household, never a real donor email.
+- **No secrets.** No `.env`, no service-role keys, no connection strings, no
+  Stripe keys. Anon/publishable keys only, and only if they're genuinely
+  public by design.
+- **No production dumps**, ever, for any reason, including debugging.
+- **Sandbox is separate from prod.** Different Supabase projects, different
+  keys. Nothing gets copied down from prod to develop against.
+
+If you're about to commit something and you'd hesitate to have a stranger
+read it, stop and say so.
+
 ## Hard rule: stop and flag
 
 Anything touching auth, PII, payments, or deletion: stop, say what you're
