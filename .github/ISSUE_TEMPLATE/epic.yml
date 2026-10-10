@@ -40,7 +40,8 @@ body:
     attributes:
       label: Definition of Done
       options:
-        - label: Migration applied
+        - label: data-model/*.sql updated and build.sh runs clean
+        - label: check-no-pii.sh passes
         - label: Access rules written AND tested (a test proving denial)
         - label: Happy path works
         - label: At least one failure path handled
