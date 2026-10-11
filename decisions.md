@@ -31,6 +31,14 @@ Three kinds of entry below:
 
 ### The stack
 
+> **Partly superseded on 2026-10-11.** Items 2, 4 and 6 below no longer hold:
+> Postgres with row-level security replaced SQLite, the portable-SQL rule was
+> dropped with it, and RLS replaced the one-data-module rule as the security
+> boundary. Item 3 (zero npm) was relaxed the same day — packages are allowed
+> where they genuinely help. The text is
+> kept unchanged because this is a capture document — the current position
+> lives in the product repo's `decisions.md`.
+
 1. **Plain HTML, CSS and JavaScript.** No React, no Vite, no TypeScript, no
    bundler, no build step. The reason is the teaching goal, not performance:
    you have to be able to read every line. This is already in `CLAUDE.md`.

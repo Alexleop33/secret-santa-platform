@@ -20,7 +20,8 @@ An Epic whose parent Story isn't Ready gets closed.
   Seeds are synthetic. Sandbox and prod are separate projects with separate
   keys.
 - **Never roll our own auth.** Donors sign in by emailed magic link.
-- **Payments go through a Stripe link.** We never touch card data.
+- **No payments, ever.** The app never handles money. No Stripe link, no card
+  data, no cash — donors buy gifts and drop them off.
 - **The app must never be the single point of failure.** If it breaks in
   December, the coordinator falls back to a spreadsheet and gifts still get
   delivered. Roster CSV export is a safety feature, not a report.
@@ -42,13 +43,15 @@ Closes Alexleop33/secret-santa-product#12
 
 ## Stack
 
-Not yet committed — a starting recommendation.
+Decided 2026-10-11. `CLAUDE.md` carries the reasoning behind each line.
 
 | Layer | Choice | Why |
 |---|---|---|
-| DB / auth | Supabase (Postgres + RLS) | Alex has prior exposure; RLS is the security model |
-| Front end | React + Vite | Alex has built a React PWA before |
-| Deploy | DigitalOcean via GitHub Actions | stated intent |
+| Front end | Plain HTML, CSS, JavaScript | No framework, no bundler, no build step — Alex can read every line |
+| Database | Postgres with row-level security | The database refuses the wrong reader, rather than the app remembering to |
+| Login | Google sign-in | No passwords stored. Magic links postponed; families still have no login |
+| Host | Supabase, for now | Carries the session and the RLS bridge; the anon key is public, so RLS is load-bearing |
+| Deploy | Undecided | Nothing to deploy yet — decide when something runs |
 
 ## Data model sketch
 

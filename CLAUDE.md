@@ -79,7 +79,8 @@ about to do, wait. Do not be helpful and proceed.
 - Donors sign in by **emailed magic link**. No donor passwords anywhere.
 - **RLS on every table from the first migration.** Default deny, then open
   specific paths. No table ships without a policy *and a test proving denial.*
-- Payments, if any, go through a **Stripe link**. We never touch card data.
+- **No payments, ever.** The app never handles money — no Stripe link, no
+  card data, no cash. Donors buy gifts and drop them off. Decided 2026-10-11.
 
 ## The app must never be the single point of failure
 
@@ -87,14 +88,36 @@ If this breaks in December, mom must be able to fall back to a spreadsheet and
 still get gifts to families. **Roster CSV export is a safety feature.** Treat
 it as load-bearing, not as a report.
 
-## Proposed stack — recommended, not committed
+## Stack — decided
 
-- **Supabase** — Postgres, Auth, Row Level Security. Alex has prior exposure.
-- **React + Vite** front end. Alex has built a React PWA before.
-- **DigitalOcean** via GitHub Actions.
+- **Plain HTML, CSS and JavaScript.** No React, no Vite, no TypeScript, no
+  bundler, no build step. The reason is the teaching goal, not performance:
+  Alex has to be able to read every line. Decided 2026-10-11, superseding
+  React + Vite.
+- **Postgres, with row-level security.** Decided 2026-10-11, replacing
+  SQLite. RLS is the security model: the database refuses the wrong reader,
+  rather than the application remembering to scope every query. Hosted on
+  **Supabase** — for now — which is also where sessions and the RLS bridge
+  come from. The anon key is public by design, so **RLS is the only thing
+  between that key and the data.**
+- **RLS is not optional and not deferrable.** No table ships without a policy
+  and a test proving the wrong user gets nothing back. A wrong policy looks
+  exactly like a right one, which is why the test is the deliverable.
+- **Google sign-in.** No passwords stored, ever. Email magic links are
+  postponed, and families still have no login at all — the one-time form link
+  is an unsolved mechanism, not a decided one.
+- **npm packages are allowed where they genuinely help.** Prefer what Node
+  already has — `fetch`, `node:http`, `node:test` — because fewer moving
+  parts is easier to read and easier to trust. But a well-chosen package
+  beats hand-rolling the same thing badly. Adding one is a judgement call to
+  make out loud in the Epic, not a detail to slip in.
+- **Deployment: undecided.** There is nothing to deploy yet, and specifying
+  deployment before a page renders is a mistake this project already made
+  once. Don't propose a host until something runs.
 
-Assume React familiarity and some Supabase exposure. **Do not assume depth in
-SQL, backend architecture, or RLS** — explain those.
+Assume JavaScript is familiar — Alex has built a React PWA, so the language is
+known even though the framework is gone. **Do not assume depth in SQL, backend
+architecture, or RLS** — explain those.
 
 ## Data model sketch
 

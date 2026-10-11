@@ -40,9 +40,9 @@ body:
     attributes:
       label: Definition of Done
       options:
-        - label: data-model/*.sql updated and build.sh runs clean
-        - label: check-no-pii.sh passes
-        - label: Access rules written AND tested (a test proving denial)
+        - label: Migration applied (or: no schema change)
+        - label: RLS policy written AND a test proving the wrong user gets nothing
+        - label: No PII in URLs, query strings, logs, or error messages
         - label: Happy path works
         - label: At least one failure path handled
         - label: I can explain this code out loud
