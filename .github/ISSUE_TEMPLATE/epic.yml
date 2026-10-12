@@ -41,7 +41,7 @@ body:
       label: Definition of Done
       options:
         - label: "Migration applied (or: no schema change)"
-        - label: RLS policy written AND a test proving the wrong user gets nothing
+        - label: "RLS policy written AND a test proving the wrong user gets nothing (or: no new table)"
         - label: No PII in URLs, query strings, logs, or error messages
         - label: Happy path works
         - label: At least one failure path handled
