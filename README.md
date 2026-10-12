@@ -47,7 +47,7 @@ Decided 2026-10-11. `CLAUDE.md` carries the reasoning behind each line.
 
 | Layer | Choice | Why |
 |---|---|---|
-| Front end | Plain HTML, CSS, JavaScript | No framework, no bundler, no build step — Alex can read every line |
+| Front end | Plain HTML, CSS, JavaScript | No framework, no TypeScript — Alex can read every line. A bundler is case by case, see CLAUDE.md |
 | Database | Postgres with row-level security | The database refuses the wrong reader, rather than the app remembering to |
 | Login | Google sign-in | No passwords stored. Magic links postponed; families still have no login |
 | Host | Supabase, for now | Carries the session and the RLS bridge; the anon key is public, so RLS is load-bearing |

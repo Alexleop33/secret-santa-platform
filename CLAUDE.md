@@ -90,10 +90,16 @@ it as load-bearing, not as a report.
 
 ## Stack — decided
 
-- **Plain HTML, CSS and JavaScript.** No React, no Vite, no TypeScript, no
-  bundler, no build step. The reason is the teaching goal, not performance:
-  Alex has to be able to read every line. Decided 2026-10-11, superseding
-  React + Vite.
+- **Plain HTML, CSS and JavaScript.** No framework, no TypeScript. The reason
+  is the teaching goal, not performance: Alex has to be able to read every
+  line. Decided 2026-10-11, superseding React + Vite.
+- **No build step by default; a bundler is case by case.** The principle is
+  that *the browser runs the file you wrote*, and a bundler is the one tool
+  that breaks it. So one needs a named reason in the Epic: what breaks
+  without it, and why a pinned CDN import or a Node-side script doesn't
+  solve it instead. "It's standard" is not a reason. Case by case as of
+  2026-10-12. Adopting a bundler does **not** reopen the framework
+  decision — those are two separate calls.
 - **Postgres, with row-level security.** Decided 2026-10-11, replacing
   SQLite. RLS is the security model: the database refuses the wrong reader,
   rather than the application remembering to scope every query. Hosted on
