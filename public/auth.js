@@ -6,10 +6,15 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const root = document.getElementById("auth-root");
 
 function render(session, errorMessage) {
+  // Pages other than index.html (queue.html, importing supabase from here)
+  // have no #auth-root at all — nothing to draw into, so do nothing rather
+  // than crash on a null element.
+  if (!root) return;
+
   root.innerHTML = "";
 
   if (errorMessage) {
