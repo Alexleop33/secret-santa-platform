@@ -1,6 +1,8 @@
 // Tiny static file server for Sub for Santa.
 //
-// Serves whatever file is requested out of this directory, nothing more.
+// Serves whatever file is requested out of public/, nothing more. Anything
+// outside public/ — CLAUDE.md, decisions.md, package.json, a future .env —
+// is unreachable over HTTP, not just unlinked.
 // No framework, no build step, no dependencies (see package.json) — this
 // is the entire HTTP layer for now.
 //
@@ -12,7 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const PORT = 3000;
-const ROOT = import.meta.dirname; // the directory this file lives in
+const ROOT = path.join(import.meta.dirname, "public");
 
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
