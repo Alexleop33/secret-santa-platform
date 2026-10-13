@@ -102,6 +102,11 @@ about to do, wait. Do not be helpful and proceed.
   a screen that isn't theirs — but **RLS is the only thing protecting the
   data.** The moment a page feels safe *because* it redirects is the dangerous
   one. Added 2026-10-13.
+- **There is deliberately no page-level gate.** Any page in `public/` can be
+  fetched by anyone. A non-admin loading the queue sees an empty list because
+  RLS returned nothing — not because the page stopped them. Adding a redirect
+  later is fine as UX, but it changes nothing about who can read what, so
+  don't add one and consider the problem solved.
 - **The Supabase MCP is temporary and gets removed before this goes live.**
   It is here to verify that RLS policies actually deny, while the only rows
   are fake ones we wrote. It carries `database` access, which means arbitrary
