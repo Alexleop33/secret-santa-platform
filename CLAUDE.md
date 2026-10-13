@@ -76,11 +76,19 @@ about to do, wait. Do not be helpful and proceed.
 ## Security rules, regardless of stack
 
 - **Never** roll our own auth, sessions, or password storage.
-- Donors sign in by **emailed magic link**. No donor passwords anywhere.
+- **Google sign-in, for everyone who signs in.** No passwords anywhere.
+  Email magic links are postponed, not rejected. Families never sign in at
+  all, and donors without a Google account are an open exclusion — see the
+  product repo's open questions. Decided 2026-10-11.
 - **RLS on every table from the first migration.** Default deny, then open
   specific paths. No table ships without a policy *and a test proving denial.*
 - **No payments, ever.** The app never handles money — no Stripe link, no
   card data, no cash. Donors buy gifts and drop them off. Decided 2026-10-11.
+- **Browser files live in `public/`, and the server serves only that.**
+  Everything outside it — the docs, `package.json`, `supabase/`, a `.env` —
+  is unreachable over HTTP by design, not by luck. New pages, scripts and
+  stylesheets go in `public/`; nothing else does. Before this, `server.js`
+  served its own directory and `decisions.md` was fetchable.
 
 ## The app must never be the single point of failure
 
