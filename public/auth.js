@@ -26,10 +26,16 @@ function render(session, errorMessage) {
   if (session) {
     const whoami = document.createElement("p");
     whoami.textContent = `Signed in as ${session.user.email}`;
+    // Shown to anyone signed in, not just the admin — the same reasoning
+    // as the queue page itself: this link is just navigation, and RLS is
+    // what actually decides who sees anything once they get there.
+    const queueLink = document.createElement("a");
+    queueLink.href = "/queue.html";
+    queueLink.textContent = "View the queue";
     const signOutButton = document.createElement("button");
     signOutButton.textContent = "Sign out";
     signOutButton.onclick = () => supabase.auth.signOut();
-    root.append(whoami, signOutButton);
+    root.append(whoami, queueLink, signOutButton);
   } else {
     const signInButton = document.createElement("button");
     signInButton.textContent = "Sign in with Google";

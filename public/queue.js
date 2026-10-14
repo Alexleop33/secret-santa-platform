@@ -39,22 +39,33 @@ function renderQueue(rows) {
   for (const row of rows) {
     const item = document.createElement("li");
     const date = new Date(row.referred_on).toLocaleDateString();
-    item.textContent = `${row.ref_code} — ${row.summary} (referred ${date})`;
+    const text = document.createElement("span");
+    text.textContent = `${row.ref_code} — ${row.summary} (referred ${date}) `;
+
+    // Buttons render for anyone who can see a row — and only the admin
+    // can see a row, because the SELECT policy says so. A role check
+    // here would just be a second query to prove what the database
+    // already decided.
+    const approveButton = document.createElement("button");
+    approveButton.textContent = "Approve";
+    approveButton.onclick = () => resolveReferral(row.id, "live");
+
+    const rejectButton = document.createElement("button");
+    rejectButton.textContent = "Reject";
+    rejectButton.onclick = () => resolveReferral(row.id, "rejected");
+
+    item.append(text, approveButton, rejectButton);
     list.appendChild(item);
   }
   root.appendChild(list);
 }
 
-const { data: sessionData } = await supabase.auth.getSession();
-
-if (!sessionData.session) {
-  renderSignedOut();
-} else {
-  // The status filter states what this screen is for; the policy is what
-  // actually enforces who can read what, regardless of this query.
+// The status filter states what this screen is for; the policy is what
+// actually enforces who can read what, regardless of this query.
+async function loadQueue() {
   const { data, error } = await supabase
     .from("households")
-    .select("ref_code, summary, referred_on")
+    .select("id, ref_code, summary, referred_on")
     .eq("status", "pending_review")
     .order("referred_on", { ascending: true });
 
@@ -63,4 +74,31 @@ if (!sessionData.session) {
   } else {
     renderQueue(data);
   }
+}
+
+// No .select() after the update: once a row is no longer pending_review,
+// the SELECT policy can't see it anymore, so asking for it back would
+// always come back empty — indistinguishable from a failed write.
+// Re-fetching the queue afterwards is what actually proves the write
+// landed, rather than assuming it from a local change.
+async function resolveReferral(id, status) {
+  const { error } = await supabase
+    .from("households")
+    .update({ status })
+    .eq("id", id);
+
+  if (error) {
+    renderError(error);
+    return;
+  }
+
+  await loadQueue();
+}
+
+const { data: sessionData } = await supabase.auth.getSession();
+
+if (!sessionData.session) {
+  renderSignedOut();
+} else {
+  await loadQueue();
 }
