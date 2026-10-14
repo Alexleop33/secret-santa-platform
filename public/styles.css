@@ -1,0 +1,325 @@
+/* Design language lifted from the prototype referenced in CLAUDE.md — the
+   look, not the markup. Palette and type from decisions.md #63: Manrope
+   falling back to IBM Plex Sans, warm cream ground, deep green for the
+   admin console, amber for anything unresolved. These are admin pages
+   (the queue, referral links), so the primary action color is the admin
+   green, not the donor cranberry — that one's defined for when a donor
+   screen exists, but nothing here uses it yet. Light theme only. */
+
+:root {
+  --color-bg: #faf6f2;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fbf4f1;
+  --color-ink: #1a1614;
+  --color-muted: #5d5651;
+  --color-faint: #8c837d;
+  --color-rule: #e8dfd8;
+
+  --color-admin: #14432e; /* deep green — the admin console */
+  --color-admin-soft: #e7ede8;
+  --color-active: #1f7a4c; /* lighter green — live, usable, good */
+  --color-active-soft: #e3f0e8;
+  --color-donor: #a81e32; /* cranberry — a donor's next action, unused so far */
+  --color-amber: #8a6212; /* anything unresolved */
+  --color-amber-soft: #f7ecd6;
+  --color-danger: #7c1d28; /* rejected */
+  --color-danger-soft: #f6e4e6;
+  --color-neutral-soft: #efeae5;
+
+  --font-heading: "Manrope", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Manrope", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --radius: 8px;
+  --radius-sm: 6px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+a {
+  color: var(--color-admin);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-admin);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1 {
+  font-size: 30px;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 19px;
+}
+
+p {
+  margin: 0;
+}
+
+/* ---------- page shell ---------- */
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.page-header .eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-active);
+  margin-bottom: 4px;
+}
+
+.page-nav {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ---------- buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn:hover:not(:disabled) {
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-admin);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #0e3523;
+}
+
+.btn-outline {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-rule);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--color-neutral-soft);
+}
+
+.btn-danger {
+  background: var(--color-surface);
+  color: var(--color-danger);
+  border-color: #e5c7cb;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-soft);
+}
+
+.btn-sm {
+  min-height: 36px;
+  padding: 7px 13px;
+  font-size: 12.5px;
+}
+
+/* ---------- cards & messages ---------- */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.message {
+  color: var(--color-muted);
+}
+
+.message-error {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border: 1px solid #e5c7cb;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.empty-state {
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius);
+}
+
+/* ---------- lists (queue, links) ---------- */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--color-rule);
+  flex-wrap: wrap;
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+.list-row:nth-child(even) {
+  background: var(--color-surface-alt);
+}
+
+.list-row-main {
+  flex: 1;
+  min-width: 200px;
+}
+
+.list-row-title {
+  font-weight: 700;
+}
+
+.list-row-meta {
+  color: var(--color-muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.list-row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---------- status pills ---------- */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.pill-pending {
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+}
+
+.pill-active {
+  background: var(--color-active-soft);
+  color: var(--color-active);
+}
+
+.pill-done {
+  background: var(--color-admin);
+  color: #fff;
+}
+
+.pill-rejected {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.pill-neutral {
+  background: var(--color-neutral-soft);
+  color: var(--color-muted);
+}
+
+/* ---------- phone width ---------- */
+
+@media (max-width: 480px) {
+  .page {
+    padding: 20px 16px 48px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .list-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .list-row-actions .btn {
+    flex: 1;
+  }
+}

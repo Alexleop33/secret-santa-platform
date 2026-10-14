@@ -8,6 +8,7 @@ const root = document.getElementById("queue-root");
 function renderSignedOut() {
   root.innerHTML = "";
   const message = document.createElement("p");
+  message.className = "message";
   message.textContent = "Sign in to view the queue.";
   const link = document.createElement("a");
   link.href = "/";
@@ -18,6 +19,7 @@ function renderSignedOut() {
 function renderError(error) {
   root.innerHTML = "";
   const message = document.createElement("p");
+  message.className = "message-error";
   message.textContent = `Couldn't load the queue: ${error.message}`;
   root.appendChild(message);
 }
@@ -30,31 +32,48 @@ function renderQueue(rows) {
 
   if (rows.length === 0) {
     const message = document.createElement("p");
+    message.className = "empty-state";
     message.textContent = "Nothing is waiting for review right now.";
     root.appendChild(message);
     return;
   }
 
   const list = document.createElement("ul");
+  list.className = "list";
   for (const row of rows) {
     const item = document.createElement("li");
+    item.className = "list-row";
     const date = new Date(row.referred_on).toLocaleDateString();
-    const text = document.createElement("span");
-    text.textContent = `${row.ref_code} — ${row.summary} (referred ${date}) `;
+
+    const main = document.createElement("div");
+    main.className = "list-row-main";
+    const title = document.createElement("div");
+    title.className = "list-row-title";
+    title.textContent = row.ref_code;
+    const meta = document.createElement("div");
+    meta.className = "list-row-meta";
+    meta.textContent = `${row.summary} (referred ${date})`;
+    main.append(title, meta);
+
+    const actions = document.createElement("div");
+    actions.className = "list-row-actions";
 
     // Buttons render for anyone who can see a row — and only the admin
     // can see a row, because the SELECT policy says so. A role check
     // here would just be a second query to prove what the database
     // already decided.
     const approveButton = document.createElement("button");
+    approveButton.className = "btn btn-primary btn-sm";
     approveButton.textContent = "Approve";
     approveButton.onclick = () => resolveReferral(row.id, "live");
 
     const rejectButton = document.createElement("button");
+    rejectButton.className = "btn btn-danger btn-sm";
     rejectButton.textContent = "Reject";
     rejectButton.onclick = () => resolveReferral(row.id, "rejected");
 
-    item.append(text, approveButton, rejectButton);
+    actions.append(approveButton, rejectButton);
+    item.append(main, actions);
     list.appendChild(item);
   }
   root.appendChild(list);

@@ -19,25 +19,39 @@ function render(session, errorMessage) {
 
   if (errorMessage) {
     const message = document.createElement("p");
+    message.className = "message-error";
     message.textContent = `Sign-in failed: ${errorMessage}`;
     root.appendChild(message);
   }
 
   if (session) {
+    const card = document.createElement("div");
+    card.className = "card";
+
     const whoami = document.createElement("p");
+    whoami.className = "message";
     whoami.textContent = `Signed in as ${session.user.email}`;
+
+    const nav = document.createElement("div");
+    nav.className = "page-nav";
     // Shown to anyone signed in, not just the admin — the same reasoning
     // as the queue page itself: this link is just navigation, and RLS is
     // what actually decides who sees anything once they get there.
     const queueLink = document.createElement("a");
     queueLink.href = "/queue.html";
     queueLink.textContent = "View the queue";
+
     const signOutButton = document.createElement("button");
+    signOutButton.className = "btn btn-outline btn-sm";
     signOutButton.textContent = "Sign out";
     signOutButton.onclick = () => supabase.auth.signOut();
-    root.append(whoami, queueLink, signOutButton);
+
+    nav.append(queueLink, signOutButton);
+    card.append(whoami, nav);
+    root.appendChild(card);
   } else {
     const signInButton = document.createElement("button");
+    signInButton.className = "btn btn-primary";
     signInButton.textContent = "Sign in with Google";
     signInButton.onclick = () =>
       supabase.auth.signInWithOAuth({
