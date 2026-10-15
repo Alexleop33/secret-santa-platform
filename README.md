@@ -26,6 +26,48 @@ An Epic whose parent Story isn't Ready gets closed.
   December, the coordinator falls back to a spreadsheet and gifts still get
   delivered. Roster CSV export is a safety feature, not a report.
 
+## Run it
+
+You need two things installed: **Node 22** and **Docker Desktop** (running).
+No Supabase, Google or Cloudflare account.
+
+```
+git clone https://github.com/Alexleop33/secret-santa-platform
+cd secret-santa-platform
+npm install
+npm run dev
+```
+
+The first run pulls a few Docker images, so give it a couple of minutes.
+Then:
+
+1. Open <http://localhost:3000> and use **"Email me a sign-in link"**. The
+   email doesn't go anywhere — open **Mailpit** at <http://127.0.0.1:54324>
+   and click the link there.
+2. Make that account the admin: `npm run make-admin -- you@example.test`
+   (the same address you just used).
+3. Reload <http://localhost:3000/queue.html>. Three fake households are
+   waiting for review.
+
+What `npm run dev` does, in order: checks Docker is up → `supabase start`
+(Postgres, Auth, REST API, Mailpit, as containers) → `supabase db reset`
+(every migration, then `supabase/seed.sql`) → `node server.js`. The database
+is wiped and rebuilt on every run — that's deliberate. What you see is always
+what the migrations say, and nothing you type locally can leak anywhere.
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | The whole app, locally. Ctrl-C stops the web server only |
+| `npm run db:stop` | Stops the containers |
+| `npm run make-admin -- you@example.test` | Makes a local account the admin |
+| `npm test` | Unit tests (`node --test`) |
+| `npm run test:db` | RLS denial tests (pgTAP) against the local database |
+| `SUPABASE_TARGET=dev npm start` | Local pages against the **hosted dev** project. The exception, not the default — sign-in is Google there, and the email button won't appear |
+
+The Supabase CLI is a pinned `devDependency`, so there is nothing to install
+globally. Sign-in by email exists on the local database **only**; both hosted
+projects keep it switched off and use Google.
+
 ## How work arrives
 
 ```
@@ -49,7 +91,7 @@ Decided 2026-10-11. `CLAUDE.md` carries the reasoning behind each line.
 |---|---|---|
 | Front end | Plain HTML, CSS, JavaScript | No framework, no TypeScript — Alex can read every line. A bundler is case by case, see CLAUDE.md |
 | Database | Postgres with row-level security | The database refuses the wrong reader, rather than the app remembering to |
-| Login | Google sign-in | No passwords stored. Magic links postponed; families still have no login |
+| Login | Google sign-in | No passwords stored. Hosted projects are Google-only; the local Docker database also accepts an emailed link, so a fresh clone can sign in. Families still have no login |
 | Host | Supabase, for now | Carries the session and the RLS bridge; the anon key is public, so RLS is load-bearing |
 | Deploy | Undecided | Nothing to deploy yet — decide when something runs |
 

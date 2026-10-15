@@ -1,10 +1,14 @@
-// The whole sign-in-with-Google flow: start the redirect, read the session
-// back on return, end the session on sign out. No table and no RLS yet —
-// there is nothing to protect. Access control right now is Google's
-// test-user list, not this app.
+// The whole sign-in flow: start the Google redirect, read the session back
+// on return, end the session on sign out. On a local database only, there
+// is a second way in — an emailed link that lands in Mailpit — because a
+// fresh clone has no Google OAuth client to use. Both paths end in the same
+// Supabase session; everything after sign-in is identical.
+//
+// The CDN import is pinned to an exact version. A floating "@2" would let a
+// new release change what runs on the live site without a commit.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.117.3";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, env } from "./config.js";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const root = document.getElementById("auth-root");
@@ -39,16 +43,63 @@ function render(session, errorMessage) {
   } else {
     const signInButton = document.createElement("button");
     signInButton.textContent = "Sign in with Google";
-    signInButton.onclick = () =>
-      supabase.auth.signInWithOAuth({
+    signInButton.onclick = async () => {
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: window.location.origin,
           queryParams: { prompt: "select_account" },
         },
       });
+      // Normally this never returns — the browser has left for Google. It
+      // does return on a local database with no Google client configured
+      // ("provider is not enabled"), and that deserves a message, not silence.
+      if (error) render(null, error.message);
+    };
     root.appendChild(signInButton);
+
+    // Local only. config.js says "local" exactly when the page is talking to
+    // the Docker database on this machine. On the hosted projects the email
+    // provider is switched off, so this form would fail there anyway — the
+    // gate keeps it from even appearing.
+    if (env === "local") {
+      root.appendChild(renderLocalEmailForm());
+    }
   }
+}
+
+// A magic link, for the local database only. Supabase "sends" the email to
+// Mailpit, a fake inbox running in Docker; nothing leaves the machine.
+// Clicking the link in Mailpit brings the browser back here signed in.
+function renderLocalEmailForm() {
+  const form = document.createElement("form");
+  const label = document.createElement("label");
+  label.textContent = "Local only — sign in by email: ";
+  const input = document.createElement("input");
+  input.type = "email";
+  input.name = "email";
+  input.required = true;
+  input.placeholder = "you@example.test";
+  const button = document.createElement("button");
+  button.type = "submit";
+  button.textContent = "Email me a sign-in link";
+  const status = document.createElement("p");
+  label.appendChild(input);
+  form.append(label, button, status);
+
+  form.onsubmit = async (event) => {
+    event.preventDefault();
+    status.textContent = "Sending…";
+    const { error } = await supabase.auth.signInWithOtp({
+      email: input.value,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    status.textContent = error
+      ? `Couldn't send the link: ${error.message}`
+      : "Sent. Open Mailpit at http://127.0.0.1:54324 and click the link.";
+  };
+
+  return form;
 }
 
 // Google/Supabase send the user back with an error in the URL (denied
