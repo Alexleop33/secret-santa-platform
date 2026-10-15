@@ -14,9 +14,11 @@
 // design. The local ones are the Supabase CLI's fixed demo values, identical
 // on every machine. RLS, not the key, is what protects the data.
 
-// Set by the prod PR once the Cloudflare Pages project exists. While it's
-// null, no hostname can resolve to prod.
-export const PROD_HOSTNAME = null;
+// The one hostname that is the live site. Exact match only — "www." in
+// front or anything after it is a different host, and goes to dev. If the
+// Cloudflare Pages project ends up with a different name, this is the one
+// line to change (docs/environments.md).
+export const PROD_HOSTNAME = "sub-for-santa.pages.dev";
 
 const TARGETS = {
   local: {
@@ -29,8 +31,15 @@ const TARGETS = {
     url: "https://gxgfzafrxulzltikdkca.supabase.co",
     publishableKey: "sb_publishable_3NOWW-FNhOxC2boZSVOVKQ_6AA3whlI",
   },
-  // Filled in by the prod PR. Until then there is nowhere for prod to go.
-  prod: null,
+  // Filled in by a human once the prod Supabase project exists
+  // (docs/environments.md, prod step 6): the project URL and its
+  // *publishable* key, both public by design. Until then the live site
+  // refuses to start rather than quietly talking to dev.
+  prod: {
+    env: "prod",
+    url: null,
+    publishableKey: null,
+  },
 };
 
 // Pure function: hostname in, environment name out. Exported so the unit
@@ -50,8 +59,8 @@ export function pickTarget(hostname, override, prodHostname = PROD_HOSTNAME) {
 // which sets nothing, so the hostname rule alone decides.
 const name = pickTarget(globalThis.location?.hostname, globalThis.SUPABASE_TARGET);
 const target = TARGETS[name];
-if (!target) {
-  throw new Error(`No Supabase configuration for the "${name}" environment yet.`);
+if (!target || !target.url || !target.publishableKey) {
+  throw new Error(`The "${name}" environment has no Supabase project configured yet (public/config.js).`);
 }
 
 export const env = target.env;

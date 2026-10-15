@@ -3,9 +3,11 @@
 // Run with `npm test` (node --test). No browser, no network.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickTarget } from "../public/config.js";
+import { pickTarget, PROD_HOSTNAME } from "../public/config.js";
 
-const PROD = "sub-for-santa.pages.dev"; // stand-in; the real value lives in config.js
+// Most tests pass the prod hostname in explicitly so they read clearly; the
+// last one checks the real constant from config.js.
+const PROD = "sub-for-santa.pages.dev";
 
 test("localhost and 127.0.0.1 resolve to local", () => {
   assert.equal(pickTarget("localhost", undefined, PROD), "local");
@@ -42,4 +44,13 @@ test("unknown hosts, empty hosts and missing hosts resolve to dev", () => {
 test("while the prod hostname is unset, nothing resolves to prod", () => {
   assert.equal(pickTarget("sub-for-santa.pages.dev", undefined, null), "dev");
   assert.equal(pickTarget("null", undefined, null), "dev");
+});
+
+test("the real PROD_HOSTNAME is set, exact, and the only way to prod", () => {
+  assert.equal(typeof PROD_HOSTNAME, "string");
+  assert.equal(pickTarget(PROD_HOSTNAME), "prod");
+  assert.equal(pickTarget(`dev.${PROD_HOSTNAME}`), "dev");
+  assert.equal(pickTarget(`pr-7.${PROD_HOSTNAME}`), "dev");
+  assert.equal(pickTarget(`${PROD_HOSTNAME}.example.com`), "dev");
+  assert.equal(pickTarget(PROD_HOSTNAME.toUpperCase()), "dev"); // browsers lowercase hostnames; anything else isn't one
 });
