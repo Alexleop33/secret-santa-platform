@@ -8,6 +8,9 @@
   <body>
     <h1>Sub for Santa</h1>
     <div id="auth-root"></div>
+    <!-- env.js must load before the module below: it tells config.js whether
+         this local server is pointed at the local database or the dev one. -->
+    <script src="/env.js"></script>
     <script type="module" src="auth.js"></script>
   </body>
 </html>
