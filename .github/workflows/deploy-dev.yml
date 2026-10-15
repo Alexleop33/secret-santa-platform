@@ -38,6 +38,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Fail fast, in plain words, if a human hasn't filled in the `development`
+      # environment yet. Without this the Supabase CLI fails a step later with
+      # "Cannot find project ref. Have you run supabase link?", which points
+      # at the wrong fix.
+      - name: Check the development environment is set up
+        env:
+          PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+          HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
+          HAS_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD != '' }}
+          HAS_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          HAS_CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+        run: |
+          missing=""
+          [ -n "$PROJECT_REF" ]            || missing="$missing SUPABASE_PROJECT_REF(var)"
+          [ -n "$PAGES_PROJECT" ]          || missing="$missing CLOUDFLARE_PAGES_PROJECT(var)"
+          [ "$HAS_SUPABASE_TOKEN" = true ] || missing="$missing SUPABASE_ACCESS_TOKEN(secret)"
+          [ "$HAS_DB_PASSWORD" = true ]    || missing="$missing SUPABASE_DB_PASSWORD(secret)"
+          [ "$HAS_CF_TOKEN" = true ]       || missing="$missing CLOUDFLARE_API_TOKEN(secret)"
+          [ "$HAS_CF_ACCOUNT" = true ]     || missing="$missing CLOUDFLARE_ACCOUNT_ID(secret)"
+          if [ -n "$missing" ]; then
+            echo "::error::The 'development' GitHub environment is missing:$missing — see docs/environments.md (dev §4)."
+            exit 1
+          fi
+          echo "✓ development environment has every value the deploy needs."
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
