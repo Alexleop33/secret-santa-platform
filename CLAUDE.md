@@ -141,6 +141,15 @@ data types.
 **Where a skill and this file disagree, this file wins.** 188K of vendored
 guidance does not outvote one deliberate decision.
 
+## Hard rule: nobody touches prod by hand
+
+The live Supabase project is changed by one path: a migration merged into
+`dev`, then into `main`, then a deploy a named reviewer approved. No MCP, no
+`supabase link`, no agent, no SQL editor. The exception is the written
+emergency procedure in `docs/break-glass.md`, and every use of it is a dated
+line in the product repo's `decisions.md`. The first use is expected: the
+admin's `profiles` row. Added 2026-10-15.
+
 ## The app must never be the single point of failure
 
 If this breaks in December, mom must be able to fall back to a spreadsheet and

@@ -1,0 +1,96 @@
+# Deploys the LIVE site — the one families and donors use — when `main`
+# changes. `main` only ever changes by merging `dev` into it (see
+# main-from-dev-only.yml and the branch protection in docs/environments.md),
+# and this workflow only runs its deploy job after a named reviewer has
+# approved it in GitHub: the `production` environment has required
+# reviewers, so the job sits at "Waiting" until one of them clicks Approve.
+#
+# Three jobs, in order:
+#   1. test    — the same pgTAP and unit tests every PR runs. A red test
+#                stops here; nothing is deployed.
+#   2. deploy  — waits for approval, then:
+#        a. `supabase db push` applies new migrations to the PROD project.
+#           Migrations ONLY. No --include-seed: seed.sql is fake data for
+#           laptops and must never reach the live database.
+#        b. `wrangler pages deploy --branch main` uploads public/ as the
+#           production deployment of the Pages project.
+#
+# NEVER add `supabase config push` here. It would copy supabase/config.toml
+# — which turns on sign-in by email for laptops — onto the live project.
+# Auth settings on prod are changed by a human in the dashboard, following
+# docs/environments.md, and nowhere else.
+#
+# Every value comes from the GitHub environment `production`. Nothing is
+# hard-coded, nothing in this file is a secret.
+name: Deploy prod
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fail fast, in plain words, if a human hasn't filled in the `production`
+      # environment yet. Without this the Supabase CLI fails a step later with
+      # "Cannot find project ref. Have you run supabase link?", which points
+      # at the wrong fix.
+      - name: Check the production environment is set up
+        env:
+          PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+          HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
+          HAS_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD != '' }}
+          HAS_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          HAS_CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+        run: |
+          missing=""
+          [ -n "$PROJECT_REF" ]            || missing="$missing SUPABASE_PROJECT_REF(var)"
+          [ -n "$PAGES_PROJECT" ]          || missing="$missing CLOUDFLARE_PAGES_PROJECT(var)"
+          [ "$HAS_SUPABASE_TOKEN" = true ] || missing="$missing SUPABASE_ACCESS_TOKEN(secret)"
+          [ "$HAS_DB_PASSWORD" = true ]    || missing="$missing SUPABASE_DB_PASSWORD(secret)"
+          [ "$HAS_CF_TOKEN" = true ]       || missing="$missing CLOUDFLARE_API_TOKEN(secret)"
+          [ "$HAS_CF_ACCOUNT" = true ]     || missing="$missing CLOUDFLARE_ACCOUNT_ID(secret)"
+          if [ -n "$missing" ]; then
+            echo "::error::The 'production' GitHub environment is missing:$missing — see docs/environments.md (prod §3)."
+            exit 1
+          fi
+          echo "✓ production environment has every value the deploy needs."
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Migrations only. Never --include-seed. Never `config push`.
+      - name: Apply migrations to the prod database
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: npx supabase db push --project-ref "${{ vars.SUPABASE_PROJECT_REF }}"
+
+      - name: Upload public/ to Cloudflare Pages (production)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: >
+          npx wrangler@4.151.0 pages deploy public
+          --project-name "${{ vars.CLOUDFLARE_PAGES_PROJECT }}"
+          --branch main
+          --commit-hash "${{ github.sha }}"

@@ -16,6 +16,9 @@ on:
     branches: [dev, main]
   push:
     branches: [dev, main]
+  # Lets deploy-prod.yml run this same job as its first step, so a release
+  # can't skip the tests.
+  workflow_call:
 
 jobs:
   test:

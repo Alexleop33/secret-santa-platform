@@ -1,0 +1,4 @@
+# Who has to approve a pull request into a protected branch. Branch
+# protection on `main` requires one review from a code owner, so a release
+# to the live site needs one of these two people to say yes.
+* @dwelch2344 @Alexleop33

@@ -10,8 +10,12 @@
 #
 #   default-src 'self'      everything not listed below: this site only
 #   script-src              our own scripts, plus the CDN import in auth.js
-#   connect-src             fetch/XHR: our own origin and the Supabase API
-#                           (the prod project is added by the prod PR)
+#   connect-src             fetch/XHR: our own origin and the Supabase API.
+#                           The prod project's host is added here by the
+#                           same PR that fills in config.js (docs/
+#                           environments.md, prod step 6); until then the
+#                           live site can't reach any database, which is
+#                           the safe failure.
 #   img-src                 our own images; data: for any inline icon
 #   frame-ancestors 'none'  nobody may put this site in an <iframe>
 #   base-uri / form-action  no rewriting where links or forms point

@@ -16,9 +16,13 @@ Prerequisite: the account has signed in at least once (sign-in creates its
 **Locally:** `npm run make-admin -- you@example.test`. It runs the SQL below
 inside the local Docker container and can't reach anything else.
 
-**On a hosted project:** run this in Supabase Studio's SQL editor against the
+**On the dev project:** run this in Supabase Studio's SQL editor against the
 project. Replace the placeholder, run it, and don't commit the real address
 anywhere.
+
+**On prod:** the same statement, but it is a break-glass action — two people
+agree first and it gets a dated line in `decisions.md`. The full procedure is
+in [docs/break-glass.md](../docs/break-glass.md).
 
 ```sql
 insert into profiles (id, role)

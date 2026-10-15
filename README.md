@@ -74,8 +74,12 @@ Your laptop runs against a database in Docker. The `dev` branch deploys to a
 demo site on the sandbox Supabase project. `main` deploys to the live site
 on a separate project that is never seeded and never edited by hand. The
 browser picks its database from the page's hostname, and anything it doesn't
-recognise goes to dev — never prod. The full map, and every console step a
-human has to do, is in [docs/environments.md](docs/environments.md).
+recognise goes to dev — never prod. A release is a pull request from `dev`
+into `main` that a code owner approves, and the deploy itself waits for a
+named reviewer. Nobody changes the live database by hand; the one exception
+is written down in [docs/break-glass.md](docs/break-glass.md). The full map,
+and every console step a human has to do, is in
+[docs/environments.md](docs/environments.md).
 
 ## How work arrives
 
