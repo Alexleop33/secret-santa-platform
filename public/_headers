@@ -1,0 +1,24 @@
+# Security headers for the hosted sites. Cloudflare Pages reads this file and
+# adds these headers to every response; the local server.js does not, so
+# they only take effect on the demo and live sites.
+#
+# The Content-Security-Policy is a list of where the browser is allowed to
+# load things from. Anything not listed is blocked — if a stranger ever got
+# text into a page that tried to pull in a script from somewhere else, the
+# browser would refuse. The only outside places this app talks to are the
+# pinned CDN that serves supabase-js and the Supabase project itself.
+#
+#   default-src 'self'      everything not listed below: this site only
+#   script-src              our own scripts, plus the CDN import in auth.js
+#   connect-src             fetch/XHR: our own origin and the Supabase API
+#                           (the prod project is added by the prod PR)
+#   img-src                 our own images; data: for any inline icon
+#   frame-ancestors 'none'  nobody may put this site in an <iframe>
+#   base-uri / form-action  no rewriting where links or forms point
+#
+# nosniff: the browser must trust our Content-Type, not guess.
+# no-referrer: never tell another site which page someone came from.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://gxgfzafrxulzltikdkca.supabase.co; img-src 'self' data:; style-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
