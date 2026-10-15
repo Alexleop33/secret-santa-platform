@@ -1,0 +1,51 @@
+# Optional: a preview site for each pull request into `dev`, at
+# https://pr-<number>.<project>.pages.dev. Frontend only — it uses the dev
+# database as it is, with no migration push, so a PR that adds a migration
+# may not work on its preview until it merges. That's a known limit of a
+# preview, not a bug.
+#
+# Previews resolve to the dev Supabase project automatically: public/config.js
+# sends every hostname that isn't the exact prod hostname to dev.
+#
+# Skipped for pull requests from forks: they don't get this repo's secrets,
+# so the upload would fail anyway. Also skipped, with a note instead of a
+# failure, until a human has filled in the `development` environment
+# (docs/environments.md §4) — a missing token is "not set up yet", not a
+# broken pull request.
+name: PR preview
+
+on:
+  pull_request:
+    branches: [dev]
+
+concurrency:
+  group: preview-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+    # Secrets can't be tested in an `if:` directly, so this copies the
+    # yes/no answer into a plain variable the steps below can look at.
+    env:
+      HAS_CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Nothing to do until the development environment is set up
+        if: env.HAS_CLOUDFLARE_TOKEN != 'true'
+        run: echo "::notice::No CLOUDFLARE_API_TOKEN in the 'development' environment yet — skipping the preview. See docs/environments.md."
+
+      - name: Upload public/ to Cloudflare Pages (pr-N branch)
+        if: env.HAS_CLOUDFLARE_TOKEN == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: >
+          npx wrangler@4.151.0 pages deploy public
+          --project-name "${{ vars.CLOUDFLARE_PAGES_PROJECT }}"
+          --branch "pr-${{ github.event.number }}"
+          --commit-hash "${{ github.event.pull_request.head.sha }}"

@@ -176,9 +176,14 @@ it as load-bearing, not as a report.
   parts is easier to read and easier to trust. But a well-chosen package
   beats hand-rolling the same thing badly. Adding one is a judgement call to
   make out loud in the Epic, not a detail to slip in.
-- **Deployment: undecided.** There is nothing to deploy yet, and specifying
-  deployment before a page renders is a mistake this project already made
-  once. Don't propose a host until something runs.
+- **Deployment: Cloudflare Pages, uploaded by GitHub Actions.** Decided
+  2026-10-15 in the Environments Epic, once a page rendered. `dev` deploys
+  to the demo site on the sandbox Supabase project; `main` deploys to the
+  live site on a separate project, behind a required approval. The
+  database is migrated first, the site uploaded second, in one workflow.
+  Cloudflare's Git integration stays off for that reason. Every console
+  step is a human checklist in `docs/environments.md`; agents never hold
+  a hosted credential.
 
 Assume JavaScript is familiar — Alex has built a React PWA, so the language is
 known even though the framework is gone. **Do not assume depth in SQL, backend

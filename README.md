@@ -68,6 +68,15 @@ The Supabase CLI is a pinned `devDependency`, so there is nothing to install
 globally. Sign-in by email exists on the local database **only**; both hosted
 projects keep it switched off and use Google.
 
+## Environments
+
+Your laptop runs against a database in Docker. The `dev` branch deploys to a
+demo site on the sandbox Supabase project. `main` deploys to the live site
+on a separate project that is never seeded and never edited by hand. The
+browser picks its database from the page's hostname, and anything it doesn't
+recognise goes to dev — never prod. The full map, and every console step a
+human has to do, is in [docs/environments.md](docs/environments.md).
+
 ## How work arrives
 
 ```
@@ -93,7 +102,7 @@ Decided 2026-10-11. `CLAUDE.md` carries the reasoning behind each line.
 | Database | Postgres with row-level security | The database refuses the wrong reader, rather than the app remembering to |
 | Login | Google sign-in | No passwords stored. Hosted projects are Google-only; the local Docker database also accepts an emailed link, so a fresh clone can sign in. Families still have no login |
 | Host | Supabase, for now | Carries the session and the RLS bridge; the anon key is public, so RLS is load-bearing |
-| Deploy | Undecided | Nothing to deploy yet — decide when something runs |
+| Deploy | Cloudflare Pages, uploaded by GitHub Actions | `dev` → demo site, `main` → live site, database migrated first in the same workflow. See [docs/environments.md](docs/environments.md) |
 
 ## Data model sketch
 
