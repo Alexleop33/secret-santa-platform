@@ -13,7 +13,8 @@ values ('00000000-0000-4000-8000-000000000001', 'admin');
 insert into households (ref_code, summary, status, referred_on) values
   ('#t1', 'test household, pending', 'pending_review', now()),
   ('#t2', 'test household, also pending', 'pending_review', now()),
-  ('#t3', 'test household, live', 'live', now());
+  ('#t3', 'test household, live', 'live', now()),
+  ('#t4', 'test household, rejected', 'rejected', now());
 
 -- Become the admin.
 set local role authenticated;
@@ -26,8 +27,8 @@ select set_config(
 -- Only this file's own rows are counted (seed.sql rows may be present too;
 -- the tests don't depend on them either way).
 select is(
-  (select count(*) from households where ref_code in ('#t1', '#t2', '#t3')),
-  3::bigint,
+  (select count(*) from households where ref_code in ('#t1', '#t2', '#t3', '#t4')),
+  4::bigint,
   'the admin sees every household, whatever its status'
 );
 
