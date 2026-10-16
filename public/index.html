@@ -12,23 +12,49 @@
       <div class="inner">
         <a class="brand" href="/">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-          <span><span class="name">Sub for Santa</span><span class="sub">2026 gift drive</span></span>
+          <span><span class="name">Sub for Santa</span><span class="sub" id="org-line">2026 gift drive</span></span>
         </a>
-        <nav class="site-nav" aria-label="Site">
-          <a href="/queue.html">Coordinator console</a>
-        </nav>
+        <nav class="site-nav" id="site-nav" aria-label="Site"></nav>
       </div>
     </header>
 
     <main class="page">
-      <div class="card auth-card" id="auth-root">
-        <p class="muted">Loading…</p>
-      </div>
+      <section class="hero">
+        <div>
+          <p class="eyebrow" id="hero-eyebrow">2026 gift drive</p>
+          <h1>Give one family a Christmas morning</h1>
+          <p class="lede">Every household here was referred through a coordinator who knows them. Read their story, pick one, and buy from their wish list. No names, no addresses — just what a household needs.</p>
+          <div class="form-actions">
+            <a class="btn btn-primary" href="/browse.html">Browse families</a>
+            <a class="btn btn-outline" href="#how">How it works</a>
+          </div>
+          <p class="muted small" id="deadline-line"></p>
+        </div>
+        <div class="card count-card" id="count-card">
+          <div class="num" id="count-num">—</div>
+          <div class="label" id="count-label">families still need a sponsor</div>
+          <div class="progress"><span id="count-bar"></span></div>
+          <p class="muted small" id="count-sub"></p>
+          <hr class="divider" />
+          <p class="small" id="count-review"></p>
+          <p class="small" id="count-days"></p>
+        </div>
+      </section>
+
+      <section class="steps" id="how">
+        <div class="step"><span class="step-icon">1</span><div><h3>Browse families</h3><p class="muted">Anonymised stories and wish lists. No names, no addresses — just what a household needs.</p></div></div>
+        <div class="step"><span class="step-icon">2</span><div><h3>Sponsor one</h3><p class="muted">Claim it and it comes off the list, so no one buys the same gifts twice. Sign in with Google to claim.</p></div></div>
+        <div class="step"><span class="step-icon">3</span><div><h3>Drop off the gifts</h3><p class="muted" id="step-dropoff">Bring everything unwrapped to the drop-off point by the deadline. The address is in your confirmation.</p></div></div>
+      </section>
+
+      <footer class="site-footer">
+        <span class="muted small" id="footer-contact"></span>
+        <span class="small"><span class="muted">Work with families?</span> <a href="/refer-info.html">Refer a household →</a></span>
+      </footer>
     </main>
 
-    <!-- env.js must load before the module below: it tells config.js whether
-         this local server is pointed at the local database or the dev one. -->
     <script src="/env.js"></script>
-    <script type="module" src="auth.js"></script>
+    <script type="module" src="landing.js"></script>
+    <script type="module" src="site.js"></script>
   </body>
 </html>
