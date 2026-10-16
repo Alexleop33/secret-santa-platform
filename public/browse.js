@@ -14,6 +14,7 @@ const filterSize = document.getElementById("filter-size");
 const filterAges = document.getElementById("filter-ages");
 
 let households = [];
+let campaign = null;
 
 const CHILD_ROLES = new Set(["boy", "girl", "child"]);
 
@@ -45,7 +46,11 @@ function render() {
   list.innerHTML = "";
   if (!shown.length) {
     const card = el("div", "card");
-    card.appendChild(el("p", "muted", households.length ? "No families match those filters." : "Every family on the list has been claimed. Check back — released households return here."));
+    card.appendChild(el("p", "muted", households.length
+      ? "No families match those filters."
+      : campaign?.status === "closed"
+        ? "This season's drive is closed. Thank you to everyone who sponsored a family."
+        : "Every family on the list has been claimed. Check back — released households return here."));
     list.appendChild(card);
     return;
   }
@@ -88,7 +93,7 @@ async function load() {
     return;
   }
 
-  const campaign = campaigns?.[0];
+  campaign = campaigns?.[0] ?? null;
   if (campaign) document.getElementById("org-line").textContent = `${campaign.organization_name} · ${campaign.year} gift drive`;
 
   // Items are shown in the order the family listed people, then items, so
