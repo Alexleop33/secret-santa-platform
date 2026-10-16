@@ -1,10 +1,14 @@
-// The whole sign-in-with-Google flow: start the redirect, read the session
-// back on return, end the session on sign out. No table and no RLS yet —
-// there is nothing to protect. Access control right now is Google's
-// test-user list, not this app.
+// The whole sign-in flow: start the Google redirect, read the session back
+// on return, end the session on sign out. On a local database only, there
+// is a second way in — an emailed link that lands in Mailpit — because a
+// fresh clone has no Google OAuth client to use. Both paths end in the same
+// Supabase session; everything after sign-in is identical.
+//
+// The CDN import is pinned to an exact version. A floating "@2" would let a
+// new release change what runs on the live site without a commit.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.117.3";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, env } from "./config.js";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const root = document.getElementById("auth-root");
@@ -19,36 +23,110 @@ function render(session, errorMessage) {
 
   if (errorMessage) {
     const message = document.createElement("p");
+    message.className = "notice notice-red";
     message.textContent = `Sign-in failed: ${errorMessage}`;
     root.appendChild(message);
   }
 
   if (session) {
+    const title = document.createElement("h2");
+    title.textContent = "You're signed in";
     const whoami = document.createElement("p");
-    whoami.textContent = `Signed in as ${session.user.email}`;
-    // Shown to anyone signed in, not just the admin — the same reasoning
-    // as the queue page itself: this link is just navigation, and RLS is
-    // what actually decides who sees anything once they get there.
-    const queueLink = document.createElement("a");
-    queueLink.href = "/queue.html";
-    queueLink.textContent = "View the queue";
+    whoami.className = "muted";
+    whoami.textContent = session.user.email;
+    // Where to next depends on who this is. The admin's own profile row is
+    // readable by the admin only, so everyone else reads nothing and gets
+    // the donor link. Navigation, not security: RLS decides what each page
+    // actually shows (CLAUDE.md).
+    const nextLink = document.createElement("a");
+    nextLink.className = "btn btn-green btn-block";
+    nextLink.href = "/browse.html";
+    nextLink.textContent = "Browse families";
+    supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle().then(({ data }) => {
+      if (data?.role === "admin") {
+        nextLink.href = "/dashboard.html";
+        nextLink.textContent = "Open the coordinator console";
+      }
+    });
     const signOutButton = document.createElement("button");
+    signOutButton.className = "btn btn-outline btn-block";
     signOutButton.textContent = "Sign out";
     signOutButton.onclick = () => supabase.auth.signOut();
-    root.append(whoami, queueLink, signOutButton);
+    root.append(title, whoami, nextLink, signOutButton);
   } else {
+    const title = document.createElement("h2");
+    title.textContent = "Sign in";
+    const intro = document.createElement("p");
+    intro.className = "muted";
+    intro.textContent = "Sponsors and the coordinator sign in with Google. Browsing needs no account; claiming a family does.";
     const signInButton = document.createElement("button");
+    signInButton.className = "btn btn-primary btn-block";
     signInButton.textContent = "Sign in with Google";
-    signInButton.onclick = () =>
-      supabase.auth.signInWithOAuth({
+    signInButton.onclick = async () => {
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: window.location.origin,
           queryParams: { prompt: "select_account" },
         },
       });
-    root.appendChild(signInButton);
+      // Normally this never returns — the browser has left for Google. It
+      // does return on a local database with no Google client configured
+      // ("provider is not enabled"), and that deserves a message, not silence.
+      if (error) render(null, error.message);
+    };
+    root.append(title, intro, signInButton);
+
+    // Local only. config.js says "local" exactly when the page is talking to
+    // the Docker database on this machine. On the hosted projects the email
+    // provider is switched off, so this form would fail there anyway — the
+    // gate keeps it from even appearing.
+    if (env === "local") {
+      const divider = document.createElement("hr");
+      divider.className = "divider";
+      root.append(divider, renderLocalEmailForm());
+    }
   }
+}
+
+// A magic link, for the local database only. Supabase "sends" the email to
+// Mailpit, a fake inbox running in Docker; nothing leaves the machine.
+// Clicking the link in Mailpit brings the browser back here signed in.
+function renderLocalEmailForm() {
+  const form = document.createElement("form");
+  form.className = "notice notice-amber";
+  const label = document.createElement("label");
+  label.className = "field";
+  const labelText = document.createElement("span");
+  labelText.textContent = "Local only — sign in by email";
+  label.appendChild(labelText);
+  const input = document.createElement("input");
+  input.type = "email";
+  input.name = "email";
+  input.required = true;
+  input.placeholder = "you@example.test";
+  const button = document.createElement("button");
+  button.type = "submit";
+  button.className = "btn btn-outline";
+  button.textContent = "Email me a sign-in link";
+  const status = document.createElement("p");
+  status.className = "status-line";
+  label.appendChild(input);
+  form.append(label, button, status);
+
+  form.onsubmit = async (event) => {
+    event.preventDefault();
+    status.textContent = "Sending…";
+    const { error } = await supabase.auth.signInWithOtp({
+      email: input.value,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    status.textContent = error
+      ? `Couldn't send the link: ${error.message}`
+      : "Sent. Open Mailpit at http://127.0.0.1:54324 and click the link.";
+  };
+
+  return form;
 }
 
 // Google/Supabase send the user back with an error in the URL (denied
@@ -74,11 +152,28 @@ if (urlError) {
 } else {
   const { data } = await supabase.auth.getSession();
   render(data.session);
+  continueAfterSignIn(data.session);
+}
+
+// A page that needed a sign-in (the story page, before claiming) leaves
+// where to go back to in sessionStorage. Once a session exists, go there.
+// Only a path on this site is honoured, never a full URL.
+function continueAfterSignIn(session) {
+  if (!session) return;
+  const next = sessionStorage.getItem("next");
+  if (next && next.startsWith("/") && !next.startsWith("//")) {
+    sessionStorage.removeItem("next");
+    window.location.href = next;
+  }
 }
 
 // Strip error/token params from the address bar so a reload doesn't replay
-// a stale error and tokens don't linger visibly in the URL.
-history.replaceState(null, "", window.location.pathname);
+// a stale error and tokens don't linger visibly in the URL. Only when the
+// URL actually carried sign-in parameters: other pages use the query
+// string for their own purposes (queue.html?select=…), and those stay.
+if (/(^|[?#&])(error|error_description|access_token|refresh_token|code|type)=/.test(window.location.search + window.location.hash)) {
+  history.replaceState(null, "", window.location.pathname);
+}
 
 // Keeps the page in sync once sign-in finishes and on every sign-out — no
 // manual reload or re-render call needed. Skip the "INITIAL_SESSION" event:
@@ -89,4 +184,5 @@ history.replaceState(null, "", window.location.pathname);
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === "INITIAL_SESSION") return;
   render(session);
+  if (event === "SIGNED_IN") continueAfterSignIn(session);
 });

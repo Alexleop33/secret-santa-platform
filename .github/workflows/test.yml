@@ -1,0 +1,45 @@
+# Runs the two test suites on every pull request into dev or main, and again
+# on the push once it lands:
+#   - supabase test db  → the pgTAP tests in supabase/tests/, which prove
+#                         RLS denies the wrong reader (the only proof we have
+#                         that a policy works — a wrong one looks identical)
+#   - npm test          → node --test, currently the hostname → environment
+#                         rule in public/config.js
+#
+# The database is the same Docker stack `npm run dev` starts, so a test that
+# passes here passes on a laptop and vice versa. The job is named `test` on
+# purpose: branch protection (a later PR) requires a check by that name.
+name: Tests
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+  # Lets deploy-prod.yml run this same job as its first step, so a release
+  # can't skip the tests.
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Installs the pinned Supabase CLI from package-lock.json — the same
+      # version a developer gets, not whatever is newest today.
+      - run: npm ci
+
+      - name: Start the local Supabase stack
+        run: npm run db:start
+
+      - name: RLS denial tests (pgTAP)
+        run: npm run test:db
+
+      - name: Unit tests (node --test)
+        run: npm test

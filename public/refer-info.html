@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sub for Santa — Refer a household</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="brand-bar"></div>
+    <header class="site-header">
+      <div class="inner">
+        <a class="brand" href="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          <span><span class="name">Sub for Santa</span><span class="sub">2026 gift drive</span></span>
+        </a>
+        <nav class="site-nav" id="site-nav" aria-label="Site"></nav>
+      </div>
+    </header>
+
+    <main class="page page-narrow">
+      <div class="card">
+        <h1>Refer a household</h1>
+        <p>Referrals open through a link from the coordinator. There is no form to find on this site and no account to create: the coordinator sends a one-time link to a family, or to someone who works with them and can pass it on. The family fills in the form themselves, in their own words, in one sitting.</p>
+        <p>Nothing a family submits is public until the coordinator has read it and approved it. The site never holds a family's name, address or phone number.</p>
+        <p id="contact-line" class="notice notice-green">To ask for a link, contact the coordinator.</p>
+      </div>
+    </main>
+
+    <script src="/env.js"></script>
+    <script type="module" src="site.js"></script>
+    <script type="module">
+      import { supabase } from "./auth.js";
+      const { data } = await supabase.from("public_campaign").select("coordinator_name, contact_email, contact_phone").limit(1);
+      const c = data?.[0];
+      if (c) document.getElementById("contact-line").textContent = `To ask for a link, contact ${c.coordinator_name} at ${c.contact_email} or ${c.contact_phone}.`;
+    </script>
+  </body>
+</html>

@@ -3,11 +3,42 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sub for Santa — Queue</title>
+    <title>Sub for Santa — Approval queue</title>
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <h1>Referrals waiting for review</h1>
-    <div id="queue-root"></div>
+    <div class="console">
+      <nav class="console-nav" aria-label="Coordinator console">
+        <a class="brand" href="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          <span><span class="name">Sub for Santa</span><span class="sub">Coordinator console</span></span>
+        </a>
+        <ul id="console-pages"></ul>
+      </nav>
+
+      <div class="console-main">
+        <header class="topbar">
+          <h1 id="page-title">Approval queue</h1>
+          <span class="spacer"></span>
+          <span class="pill pill-grey hidden" id="env-pill"></span>
+          <span class="small muted" id="whoami"></span>
+          <a class="btn btn-outline btn-sm" href="/">Home</a>
+        </header>
+
+        <main class="console-content" id="queue-root">
+          <div class="review">
+            <section class="card review-list">
+              <p class="eyebrow" id="pending-heading">Waiting</p>
+              <ul class="pick-list" id="pending-list"><li class="empty">Loading…</li></ul>
+            </section>
+            <section class="stack" id="detail"></section>
+          </div>
+          <div class="stack" id="decided"></div>
+        </main>
+      </div>
+    </div>
+
+    <script src="/env.js"></script>
     <script type="module" src="queue.js"></script>
   </body>
 </html>

@@ -1,0 +1,92 @@
+# Deploys the DEV environment — the demo site — every time something lands on
+# the `dev` branch. Two steps, in this order, on purpose:
+#
+#   1. Database first: `supabase db push` applies any new migrations to the
+#      dev Supabase project. Only migrations. Never the seed, never
+#      config.toml (see supabase/README.md — `supabase config push` would
+#      copy local-only auth settings onto a hosted project).
+#   2. Then the site: `wrangler pages deploy` uploads public/ to Cloudflare
+#      Pages as the `dev` branch, which Pages serves at
+#      https://dev.<project>.pages.dev.
+#
+# If step 1 fails, step 2 never runs, so the site can't get ahead of its
+# schema. Cloudflare's own Git integration is deliberately switched off:
+# one workflow, one order.
+#
+# Every value here comes from the GitHub environment `development`
+# (Settings → Environments). Nothing is hard-coded, nothing is a secret in
+# this file. docs/environments.md lists exactly what to put there.
+name: Deploy dev
+
+on:
+  push:
+    branches: [dev]
+  # Lets a human re-run the deploy from the Actions tab without a new commit.
+  workflow_dispatch:
+
+# Two pushes in quick succession deploy one after the other, never at once.
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: ${{ vars.SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fail fast, in plain words, if a human hasn't filled in the `development`
+      # environment yet. Without this the Supabase CLI fails a step later with
+      # "Cannot find project ref. Have you run supabase link?", which points
+      # at the wrong fix.
+      - name: Check the development environment is set up
+        env:
+          PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+          HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
+          HAS_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD != '' }}
+          HAS_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          HAS_CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+        run: |
+          missing=""
+          [ -n "$PROJECT_REF" ]            || missing="$missing SUPABASE_PROJECT_REF(var)"
+          [ -n "$PAGES_PROJECT" ]          || missing="$missing CLOUDFLARE_PAGES_PROJECT(var)"
+          [ "$HAS_SUPABASE_TOKEN" = true ] || missing="$missing SUPABASE_ACCESS_TOKEN(secret)"
+          [ "$HAS_DB_PASSWORD" = true ]    || missing="$missing SUPABASE_DB_PASSWORD(secret)"
+          [ "$HAS_CF_TOKEN" = true ]       || missing="$missing CLOUDFLARE_API_TOKEN(secret)"
+          [ "$HAS_CF_ACCOUNT" = true ]     || missing="$missing CLOUDFLARE_ACCOUNT_ID(secret)"
+          if [ -n "$missing" ]; then
+            echo "::error::The 'development' GitHub environment is missing:$missing — see docs/environments.md (dev §4)."
+            exit 1
+          fi
+          echo "✓ development environment has every value the deploy needs."
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Migrations only. No --include-seed (seed.sql is for laptops), and no
+      # `supabase config push`, ever, against a hosted project.
+      - name: Apply migrations to the dev database
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: npx supabase db push --project-ref "${{ vars.SUPABASE_PROJECT_REF }}"
+
+      # wrangler is Cloudflare's CLI. It runs here only, pinned, via npx —
+      # nobody needs it on a laptop, so it isn't a devDependency.
+      - name: Upload public/ to Cloudflare Pages (dev branch)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: >
+          npx wrangler@4.151.0 pages deploy public
+          --project-name "${{ vars.CLOUDFLARE_PAGES_PROJECT }}"
+          --branch dev
+          --commit-hash "${{ github.sha }}"

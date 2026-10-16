@@ -1,0 +1,30 @@
+# `main` is the live site, and the only thing allowed into it is `dev`.
+# This check fails any pull request into `main` whose source branch isn't
+# `dev`, so a hotfix can't land on the live site without first landing on
+# the demo site. Branch protection (docs/environments.md) makes this check
+# required, which is what gives it teeth; on its own it's just a red X.
+#
+# The one way around it is the written-down emergency procedure in
+# docs/break-glass.md — and that leaves a dated line in decisions.md.
+name: Only dev may merge into main
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  from-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Source branch must be dev
+        env:
+          HEAD: ${{ github.head_ref }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        run: |
+          if [ "$HEAD" = "dev" ] && [ "$SAME_REPO" = "true" ]; then
+            echo "✓ This pull request comes from dev."
+            exit 0
+          fi
+          echo "✗ Pull requests into main must come from the dev branch of this repository (got '$HEAD')."
+          echo "  Merge your change into dev first; it reaches main when dev does."
+          exit 1

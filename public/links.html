@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sub for Santa — Referral links</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="console">
+      <nav class="console-nav" aria-label="Coordinator console">
+        <a class="brand" href="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          <span><span class="name">Sub for Santa</span><span class="sub">Coordinator console</span></span>
+        </a>
+        <ul id="console-pages"></ul>
+      </nav>
+
+      <div class="console-main">
+        <header class="topbar">
+          <h1 id="page-title">Referral links</h1>
+          <span class="spacer"></span>
+          <span class="pill pill-grey hidden" id="env-pill"></span>
+          <span class="small muted" id="whoami"></span>
+          <a class="btn btn-outline btn-sm" href="/">Home</a>
+        </header>
+
+        <main class="console-content stack" id="links-root">
+          <section class="card">
+            <h2>Create a referral link</h2>
+            <p class="muted">Each link opens the referral form once and lasts seven days from now. Send it to a family directly, or to a provider who will pass it on. Nothing about the family is recorded until they submit.</p>
+            <div class="form-actions">
+              <button type="button" class="btn btn-green" id="create-link">Create a new link</button>
+              <span class="status-line" id="create-status"></span>
+            </div>
+            <div class="notice notice-green hidden" id="new-link">
+              <p class="eyebrow">Your new link — copy it now, it is shown only once</p>
+              <label class="field"><span class="hidden">Link</span><input type="text" id="new-link-url" readonly /></label>
+              <div class="form-actions">
+                <button type="button" class="btn btn-outline btn-sm" id="copy-link">Copy link</button>
+                <span class="small" id="new-link-expiry"></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Links already created</h2>
+            <div id="links-list"><p class="muted">Loading…</p></div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="/env.js"></script>
+    <script type="module" src="links.js"></script>
+  </body>
+</html>
