@@ -54,3 +54,14 @@ test("the real PROD_HOSTNAME is set, exact, and the only way to prod", () => {
   assert.equal(pickTarget(`${PROD_HOSTNAME}.example.com`), "dev");
   assert.equal(pickTarget(PROD_HOSTNAME.toUpperCase()), "dev"); // browsers lowercase hostnames; anything else isn't one
 });
+
+// paths.js must treat Cloudflare's clean URLs and the local server's .html
+// paths as the same page.
+import { samePage } from "../public/paths.js";
+
+test("samePage matches clean URLs against .html links and vice versa", () => {
+  assert.equal(samePage("/queue", "/queue.html"), true);
+  assert.equal(samePage("/queue.html", "/queue.html"), true);
+  assert.equal(samePage("/", "/index.html"), true);
+  assert.equal(samePage("/browse", "/story.html"), false);
+});
