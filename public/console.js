@@ -11,6 +11,7 @@ import { env } from "./config.js";
 
 export const PAGES = [
   { href: "/queue.html", label: "Approval queue", badge: "pending" },
+  { href: "/links.html", label: "Referral links" },
   { href: "/settings.html", label: "Drive settings" },
 ];
 

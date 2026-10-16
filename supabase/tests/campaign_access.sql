@@ -10,7 +10,12 @@ insert into profiles (id, role)
 values ('00000000-0000-4000-8000-000000000001', 'admin');
 
 -- The campaign row is created by the migration itself, so it is always
--- present; its id is fixed.
+-- present; its id is fixed. Its cap may have been edited on this database
+-- already (the seed, or someone using Drive settings), so remember what it
+-- is now rather than assuming the default.
+create temporary table cap_before as
+  select sponsor_cap from campaigns
+  where id = '00000000-0000-4000-a000-000000002026';
 
 -- Anonymous: the public view, nothing else.
 set local role anon;
@@ -58,7 +63,7 @@ reset role;
 
 select is(
   (select sponsor_cap from campaigns where id = '00000000-0000-4000-a000-000000002026'),
-  2,
+  (select sponsor_cap from cap_before),
   'a non-admin cannot change the sponsor cap'
 );
 
@@ -71,13 +76,13 @@ select set_config(
 );
 
 update campaigns
-set sponsor_cap = 3, drop_off_address = 'Test Hall'
+set sponsor_cap = 5, drop_off_address = 'Test Hall'
 where id = '00000000-0000-4000-a000-000000002026';
 reset role;
 
 select is(
   (select sponsor_cap from campaigns where id = '00000000-0000-4000-a000-000000002026'),
-  3,
+  5,
   'the admin can change the sponsor cap'
 );
 

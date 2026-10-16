@@ -55,6 +55,21 @@ own words, you understand the slice.
 - **Say it back:** RLS hides *rows*; a view hides *columns*. The address
   is a column, so it needed a view, not a policy.
 
+### 4. Referral links — issue #10
+
+- `referral_links` stores a SHA-256 hash of each token, its expiry (seven
+  days from creation) and, once used, which household it became. No plain
+  token column exists.
+- `create_referral_link()` is a `security definer` function: it checks
+  `is_admin()` itself, makes 24 random bytes, stores the hash, and returns
+  the plain token exactly once. There is no INSERT policy on the table, so
+  the function is the only way in.
+- `links.html` builds `…/refer.html#t=TOKEN`. The token sits in the URL
+  fragment, which browsers never send to a server, so it stays out of logs.
+- **Say it back:** the database keeps a fingerprint of the link, not the
+  link. A fingerprint can confirm a link is genuine but cannot be turned
+  back into one, so a leaked database is not a pile of working links.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close
