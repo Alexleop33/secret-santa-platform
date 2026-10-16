@@ -188,6 +188,19 @@ own words, you understand the slice.
   index decides the race. If two people click at once, exactly one wins,
   and no JavaScript had to be clever about it.
 
+### 12. Exceptions and the sponsor column — issue #23
+
+- `exceptions.html` now has its cards: a household released in the last
+  two weeks, a claim with no delivery when the deadline is close (with a
+  mailto reminder and an admin release), referrals pending more than two
+  days, and the offline-sponsor form that calls `admin_manual_claim`.
+- The dashboard reads `claims_with_sponsor`: the Sponsored tile, the
+  progress bar and the sponsor column are real, and the CSV carries them.
+- **Say it back:** "sponsored" is not a household status. A household is
+  live; a claim on it is what makes it sponsored. Keeping those apart is
+  why releasing a claim puts the household straight back on the list
+  without anyone editing the household.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

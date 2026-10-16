@@ -4,8 +4,8 @@
 // rows, which is nothing, and one query is easier to reason about than
 // six counts.
 //
-// Sponsorship does not exist yet; the sponsored tile and column read 0 and
-// "—" until the claims slice lands.
+// Sponsorship comes from claims_with_sponsor, which only the admin can
+// read: an active claim (claimed or delivered) is what "sponsored" means.
 import { supabase } from "./auth.js";
 import { mountConsole, requireSession, formatDate } from "./console.js";
 import { toCsv, downloadCsv } from "./csv.js";
@@ -16,14 +16,35 @@ const roster = document.getElementById("roster");
 const attention = document.getElementById("attention");
 
 let households = [];
+let claims = [];
 let campaign = null;
 
 const STATUS = {
   pending_review: ["pill-pending", "Pending review"],
   live: ["pill-live", "Needs a sponsor"],
+  sponsored: ["pill-sponsored", "Sponsored"],
+  delivered: ["pill-delivered", "Delivered"],
   rejected: ["pill-rejected", "Rejected"],
   withdrawn: ["pill-withdrawn", "Withdrawn"],
 };
+
+// A live household with an active claim is "sponsored" or "delivered" on
+// screen; the households table never stores that, the claims table does.
+function activeClaim(h) {
+  return claims.find((c) => c.household_id === h.id && c.status !== "released");
+}
+
+function shownStatus(h) {
+  const claim = activeClaim(h);
+  if (h.status === "live" && claim) return claim.status === "delivered" ? "delivered" : "sponsored";
+  return h.status;
+}
+
+function sponsorOf(h) {
+  const claim = activeClaim(h);
+  if (!claim) return "";
+  return claim.sponsor_email || (claim.sponsor_label ? `offline: ${claim.sponsor_label}` : "sponsor");
+}
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -48,16 +69,17 @@ function tile(number, label, sub, tone) {
 
 function renderTiles() {
   const pending = households.filter((h) => h.status === "pending_review").length;
-  const live = households.filter((h) => h.status === "live").length;
+  const live = households.filter((h) => shownStatus(h) === "live").length;
+  const sponsored = households.filter((h) => ["sponsored", "delivered"].includes(shownStatus(h))).length;
+  const delivered = households.filter((h) => shownStatus(h) === "delivered").length;
   const received = households.filter((h) => h.status !== "withdrawn").length;
-  const sponsored = 0;
   const days = campaign ? daysUntil(campaign.gifts_due) : null;
 
   tiles.innerHTML = "";
   tiles.append(
     tile(received, "Referrals received", `${pending} still awaiting review`),
     tile(live, "Need a sponsor", "live on the public list", "green"),
-    tile(sponsored, "Sponsored", "0 already delivered"),
+    tile(sponsored, "Sponsored", `${delivered} already delivered`),
     tile(days ?? "—", "Days to drop-off", campaign ? `gifts due ${formatDate(campaign.gifts_due)}` : "", "red"),
   );
 
@@ -95,9 +117,9 @@ function renderRoster() {
     const row = body.insertRow();
     row.insertCell().appendChild(el("strong", null, h.ref_code));
     row.insertCell().textContent = h.summary;
-    const [cls, label] = STATUS[h.status] ?? ["pill-grey", h.status];
+    const [cls, label] = STATUS[shownStatus(h)] ?? ["pill-grey", h.status];
     row.insertCell().appendChild(el("span", `pill ${cls}`, label));
-    row.insertCell().textContent = "—";
+    row.insertCell().textContent = sponsorOf(h) || "—";
     row.insertCell().textContent = new Date(h.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" });
     const open = el("a", "btn btn-outline btn-sm", h.status === "pending_review" ? "Review" : "Open");
     open.href = `/queue.html?select=${encodeURIComponent(h.id)}`;
@@ -112,8 +134,8 @@ document.getElementById("export").onclick = () => {
   const rows = households.map((h) => ({
     id: h.ref_code,
     household: h.summary,
-    status: h.status,
-    sponsor: "",
+    status: shownStatus(h),
+    sponsor: sponsorOf(h),
     updated: new Date(h.updated_at).toISOString().slice(0, 10),
   }));
   const columns = [["id", "id"], ["household", "household"], ["status", "status"], ["sponsor", "sponsor"], ["updated", "updated"]];
@@ -122,15 +144,17 @@ document.getElementById("export").onclick = () => {
 };
 
 async function load() {
-  const [{ data: campaigns }, { data, error }] = await Promise.all([
+  const [{ data: campaigns }, { data, error }, { data: claimRows }] = await Promise.all([
     supabase.from("public_campaign").select("*").limit(1),
     supabase
       .from("households")
       .select("id, ref_code, summary, status, referred_on, updated_at")
       .order("status", { ascending: true })
       .order("referred_on", { ascending: true }),
+    supabase.from("claims_with_sponsor").select("*"),
   ]);
   campaign = campaigns?.[0] ?? null;
+  claims = claimRows ?? [];
 
   if (error) {
     root.innerHTML = "";
