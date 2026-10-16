@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sub for Santa — Admins</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="console">
+      <nav class="console-nav" aria-label="Coordinator console">
+        <a class="brand" href="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          <span><span class="name">Sub for Santa</span><span class="sub">Coordinator console</span></span>
+        </a>
+        <ul id="console-pages"></ul>
+      </nav>
+
+      <div class="console-main">
+        <header class="topbar">
+          <h1 id="page-title">Admins</h1>
+          <span class="spacer"></span>
+          <span class="pill pill-grey hidden" id="env-pill"></span>
+          <span class="small muted" id="whoami"></span>
+          <a class="btn btn-outline btn-sm" href="/">Home</a>
+        </header>
+
+        <main class="console-content stack" id="admins-root">
+          <section class="card">
+            <h2>Add an admin</h2>
+            <p class="muted small">If the address already has an account, it becomes an admin now. If not, it becomes an admin the first time that address signs in with Google. Tell them to sign in; nothing is emailed.</p>
+            <form id="add-form" class="form-actions">
+              <label class="field"><span class="hidden">Email</span><input type="email" id="add-email" required placeholder="name@example.org" /></label>
+              <button type="submit" class="btn btn-green">Add admin</button>
+              <span class="status-line" id="add-status"></span>
+            </form>
+          </section>
+
+          <section class="card">
+            <h2>Current admins</h2>
+            <div id="admins"><p class="muted">Loading…</p></div>
+          </section>
+
+          <section class="card">
+            <h2>Pending invites</h2>
+            <p class="muted small">Addresses that will become admins when they first sign in.</p>
+            <div id="invites"></div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="/env.js"></script>
+    <script type="module" src="admins.js"></script>
+  </body>
+</html>

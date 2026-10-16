@@ -287,6 +287,22 @@ own words, you understand the slice.
   person, never an agent, every exception dated". The name changed, the
   rule did not.
 
+### 19. Admins add and remove admins — issue #63
+
+- Four functions, each insisting on `is_admin()`: `add_admin(email)`
+  promotes an existing account at once (a donor row becomes an admin row)
+  or records an invite; `remove_admin(user)` refuses to remove the last
+  admin, including yourself; `revoke_invite(email)`; `list_admins()`.
+- An invite fires on first sign-in: a trigger on `auth.users` promotes a
+  new account whose lower-cased email matches a pending invite, once, and
+  marks the invite used. Invites can only be created by admins, so every
+  path to admin rights starts with an admin.
+- Every call logs to the activity table with the email in `detail`.
+- Break-glass stays for the very first admin only.
+- **Say it back:** the dangerous question is not "can an admin add an
+  admin?" but "can the last admin be removed, and can an invite be forged?"
+  The database answers both: no, and only an admin can write an invite.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

@@ -41,7 +41,7 @@ slice-by-slice record and says what would move back upstream.
 | Anyone | `/`, `/browse.html`, `/story.html` | The landing page, the public list of live households, one family's story and wish list. No account needed. |
 | A family | `/refer.html#t=…` | Opens a one-time link from the coordinator, fills in one form, gets a referral number. |
 | A donor | `/signin.html`, `/story.html`, `/confirmed.html`, `/mine.html` | Signs in with Google, claims a household (one atomic claim, capped per sponsor), sees the drop-off details, ticks items, marks delivered, or releases. |
-| The coordinator | `/dashboard.html`, `/queue.html`, `/links.html`, `/exceptions.html`, `/settings.html` | The console: the whole drive in one look, the approval queue with checks and a private note, referral links, exceptions and the activity log, the season's dates and rules, close-out. |
+| The coordinator | `/dashboard.html`, `/queue.html`, `/links.html`, `/exceptions.html`, `/settings.html`, `/admins.html` | The console: the whole drive in one look, the approval queue with checks and a private note, referral links, exceptions and the activity log, the season's dates and rules, close-out, and who the admins are. |
 
 Every write a donor or a family makes goes through a database function that
 checks the caller; every read goes through row-level security or a view.
@@ -141,7 +141,8 @@ Everything hangs off `campaigns` — no `organizations` table above it.
 | `household_contacts` | the family's email, alone | the admin only; deleted on rejection, withdrawal, and by the purge |
 | `referral_links` | SHA-256 of the token, expiry, used-at, which household it became | the admin |
 | `claims` | household, donor (or an offline label), status, timestamps | the admin through `claims_with_sponsor`; a donor's own through `my_claims` |
-| `profiles` | role: `admin` or `donor` | each account reads its own row |
+| `profiles` | role: `admin` or `donor` | each account reads its own row; admins add and remove admins through functions, never the last one |
+| `admin_invites` | lower-cased email, who invited, used-at | the admin; a pending invite promotes the matching account on its first sign-in |
 | `activity` | every status change, by role and account id, against a ref code | the admin |
 
 ## Deadlines
