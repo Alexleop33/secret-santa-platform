@@ -230,6 +230,15 @@ own words, you understand the slice.
   The approval page already refused to approve without consent, but only
   the database can refuse every page and every tool at once.
 
+### 15. CSV formula guard — from the security review
+
+- The release PR's security review found one thing: a household summary
+  starting with `=` would be a formula once the roster CSV is opened in a
+  spreadsheet, and summaries are typed by strangers. `csv.js` now prefixes
+  such cells with an apostrophe and quotes them; two unit tests cover it.
+- **Say it back:** a spreadsheet is a program. Text that a stranger typed
+  must reach it as text, the same way it reaches the browser as text.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

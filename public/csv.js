@@ -6,10 +6,16 @@
 // `columns` is a list of [key, heading]. Every value is quoted if it holds
 // a comma, a quote or a line break; quotes inside are doubled. That is the
 // whole CSV standard that matters.
+//
+// One more rule, because a spreadsheet is a program: a cell that starts
+// with = + - @ or a tab is a formula to Excel and Google Sheets, and the
+// household summary is text a stranger typed. Such a cell gets a leading
+// apostrophe, which spreadsheets read as "this is text", and is quoted.
 export function toCsv(rows, columns) {
   const escape = (value) => {
-    const text = value == null ? "" : String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    let text = value == null ? "" : String(value);
+    if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
+    return /[",\r\n']/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
   };
   const lines = [columns.map(([, heading]) => escape(heading)).join(",")];
   for (const row of rows) {
