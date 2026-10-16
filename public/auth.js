@@ -66,7 +66,10 @@ function render(session, errorMessage) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin,
+          // With the trailing slash on purpose: Supabase matches this against
+          // its redirect allow-list, and the "/**" pattern there does not
+          // match a bare origin. Found on the first PR preview (2026-10-16).
+          redirectTo: `${window.location.origin}/`,
           queryParams: { prompt: "select_account" },
         },
       });
@@ -119,7 +122,7 @@ function renderLocalEmailForm() {
     status.textContent = "Sending…";
     const { error } = await supabase.auth.signInWithOtp({
       email: input.value,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: `${window.location.origin}/` },
     });
     status.textContent = error
       ? `Couldn't send the link: ${error.message}`
