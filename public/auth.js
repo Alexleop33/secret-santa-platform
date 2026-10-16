@@ -34,24 +34,31 @@ function render(session, errorMessage) {
     const whoami = document.createElement("p");
     whoami.className = "muted";
     whoami.textContent = session.user.email;
-    // Shown to anyone signed in, not just the admin — the same reasoning
-    // as the queue page itself: this link is just navigation, and RLS is
-    // what actually decides who sees anything once they get there.
-    const queueLink = document.createElement("a");
-    queueLink.href = "/queue.html";
-    queueLink.className = "btn btn-green btn-block";
-    queueLink.textContent = "Open the coordinator console";
+    // Where to next depends on who this is. The admin's own profile row is
+    // readable by the admin only, so everyone else reads nothing and gets
+    // the donor link. Navigation, not security: RLS decides what each page
+    // actually shows (CLAUDE.md).
+    const nextLink = document.createElement("a");
+    nextLink.className = "btn btn-green btn-block";
+    nextLink.href = "/browse.html";
+    nextLink.textContent = "Browse families";
+    supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle().then(({ data }) => {
+      if (data?.role === "admin") {
+        nextLink.href = "/dashboard.html";
+        nextLink.textContent = "Open the coordinator console";
+      }
+    });
     const signOutButton = document.createElement("button");
     signOutButton.className = "btn btn-outline btn-block";
     signOutButton.textContent = "Sign out";
     signOutButton.onclick = () => supabase.auth.signOut();
-    root.append(title, whoami, queueLink, signOutButton);
+    root.append(title, whoami, nextLink, signOutButton);
   } else {
     const title = document.createElement("h2");
     title.textContent = "Sign in";
     const intro = document.createElement("p");
     intro.className = "muted";
-    intro.textContent = "The coordinator signs in with Google. Nothing here is visible until you do.";
+    intro.textContent = "Sponsors and the coordinator sign in with Google. Browsing needs no account; claiming a family does.";
     const signInButton = document.createElement("button");
     signInButton.className = "btn btn-primary btn-block";
     signInButton.textContent = "Sign in with Google";

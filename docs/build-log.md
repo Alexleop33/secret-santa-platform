@@ -150,6 +150,23 @@ own words, you understand the slice.
   nothing. A door (a live database connection) does things. We keep the
   book and we have removed the door.
 
+### 10. The public list — issue #19
+
+- Three public **views** (`public_households`, `public_household_members`,
+  `public_wish_items`) select only the public columns of live, unclaimed
+  households; the story comes through only with the family's consent.
+  Anonymous visitors still have no policy on the tables themselves,
+  because a policy lets a whole row through and a household row carries
+  the admin's note.
+- The `claims` table arrives now, schema only: a partial unique index
+  allows one active claim per household, which is what makes two donors
+  racing for one household safe.
+- `index.html` is D1, `browse.html` is D2 and reflows to D10; `signin.html`
+  took over the sign-in card; `site.js` fills the header links by role.
+- **Say it back:** a row policy says yes or no to a whole row. When the
+  public may see some columns of a row but not others, the answer is a
+  view that only selects the public ones, and the public reads the view.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close
