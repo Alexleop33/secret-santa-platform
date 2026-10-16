@@ -4,12 +4,9 @@
 // creating a second one — same project, same session, one place that knows
 // how to talk to it.
 import { supabase } from "./auth.js";
-import { env } from "./config.js";
+import { mountConsole, requireSession, setBadge } from "./console.js";
 
 const root = document.getElementById("queue-root");
-const whoami = document.getElementById("whoami");
-const envPill = document.getElementById("env-pill");
-const navPendingCount = document.getElementById("nav-pending-count");
 
 // One section per status. "Waiting for review" starts open because that is
 // the daily job; the other two are reference and start folded. The
@@ -40,36 +37,12 @@ const SECTIONS = [
   },
 ];
 
-function renderSignedOut() {
-  root.innerHTML = "";
-  const card = document.createElement("div");
-  card.className = "card auth-card";
-  const message = document.createElement("p");
-  message.textContent = "Sign in to view referrals.";
-  const link = document.createElement("a");
-  link.href = "/";
-  link.className = "btn btn-primary";
-  link.textContent = "Sign in";
-  card.append(message, link);
-  root.appendChild(card);
-}
-
 function renderError(error) {
   root.innerHTML = "";
   const message = document.createElement("p");
   message.className = "notice notice-red";
   message.textContent = `Couldn't load referrals: ${error.message}`;
   root.appendChild(message);
-}
-
-// The sandbox pill says which database this page is talking to. It never
-// renders on the live site, where there is nothing to warn about.
-function renderChrome(session) {
-  if (whoami) whoami.textContent = session.user.email;
-  if (envPill && env !== "prod") {
-    envPill.textContent = env === "local" ? "Local database" : "Sandbox data";
-    envPill.classList.remove("hidden");
-  }
 }
 
 // Build the three sections once. Re-fetching only replaces what is inside
@@ -137,9 +110,7 @@ function renderSections(rows) {
     const matching = rows.filter((row) => row.status === section.status);
     section.count_el.textContent = `(${matching.length})`;
     section.body.innerHTML = "";
-    if (section.status === "pending_review" && navPendingCount) {
-      navPendingCount.textContent = matching.length ? String(matching.length) : "";
-    }
+    if (section.status === "pending_review") setBadge("pending", matching.length);
 
     if (matching.length === 0) {
       const message = document.createElement("p");
@@ -192,12 +163,9 @@ async function resolveReferral(id, status) {
   await loadHouseholds();
 }
 
-const { data: sessionData } = await supabase.auth.getSession();
-
-if (!sessionData.session) {
-  renderSignedOut();
-} else {
-  renderChrome(sessionData.session);
+mountConsole({ title: "Approval queue" });
+const session = await requireSession(root);
+if (session) {
   buildSections();
   await loadHouseholds();
 }
