@@ -25,6 +25,19 @@ own words, you understand the slice.
   the hard rules in CLAUDE.md decide what it may *do*. When they disagree,
   the rules win, and the list in CLAUDE.md says where.
 
+### 2. Design system — issue #8
+
+- One stylesheet, `public/styles.css`: tokens from the handbook (cream,
+  deep green, cranberry, amber), two self-hosted variable fonts, the donor
+  header shell and the coordinator sidebar shell, and the components every
+  later page uses (cards, buttons, pills, tags, notices, fields, folding
+  sections, tables, tiles).
+- `tests/pages.test.js` reads every page and script and fails if one
+  carries an inline style or loads from a host the CSP does not allow.
+- **Say it back:** pages never write CSS of their own; they put classes on
+  elements and the stylesheet decides the look. That is what lets the
+  Content-Security-Policy say "styles only from this site" and mean it.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

@@ -4,8 +4,12 @@
 // creating a second one — same project, same session, one place that knows
 // how to talk to it.
 import { supabase } from "./auth.js";
+import { env } from "./config.js";
 
 const root = document.getElementById("queue-root");
+const whoami = document.getElementById("whoami");
+const envPill = document.getElementById("env-pill");
+const navPendingCount = document.getElementById("nav-pending-count");
 
 // One section per status. "Waiting for review" starts open because that is
 // the daily job; the other two are reference and start folded. The
@@ -38,19 +42,34 @@ const SECTIONS = [
 
 function renderSignedOut() {
   root.innerHTML = "";
+  const card = document.createElement("div");
+  card.className = "card auth-card";
   const message = document.createElement("p");
   message.textContent = "Sign in to view referrals.";
   const link = document.createElement("a");
   link.href = "/";
+  link.className = "btn btn-primary";
   link.textContent = "Sign in";
-  root.append(message, link);
+  card.append(message, link);
+  root.appendChild(card);
 }
 
 function renderError(error) {
   root.innerHTML = "";
   const message = document.createElement("p");
+  message.className = "notice notice-red";
   message.textContent = `Couldn't load referrals: ${error.message}`;
   root.appendChild(message);
+}
+
+// The sandbox pill says which database this page is talking to. It never
+// renders on the live site, where there is nothing to warn about.
+function renderChrome(session) {
+  if (whoami) whoami.textContent = session.user.email;
+  if (envPill && env !== "prod") {
+    envPill.textContent = env === "local" ? "Local database" : "Sandbox data";
+    envPill.classList.remove("hidden");
+  }
 }
 
 // Build the three sections once. Re-fetching only replaces what is inside
@@ -60,8 +79,14 @@ function buildSections() {
   root.innerHTML = "";
   for (const section of SECTIONS) {
     section.details = document.createElement("details");
+    section.details.className = "section";
     section.details.open = section.open;
     section.heading = document.createElement("summary");
+    section.title_el = document.createElement("span");
+    section.title_el.textContent = section.title;
+    section.count_el = document.createElement("span");
+    section.count_el.className = "count";
+    section.heading.append(section.title_el, section.count_el);
     section.body = document.createElement("div");
     section.details.append(section.heading, section.body);
     root.appendChild(section.details);
@@ -70,25 +95,35 @@ function buildSections() {
 
 function renderRow(row, canResolve) {
   const item = document.createElement("li");
-  const date = new Date(row.referred_on).toLocaleDateString();
+  const ref = document.createElement("span");
+  ref.className = "ref";
+  ref.textContent = row.ref_code;
   const text = document.createElement("span");
-  text.textContent = `${row.ref_code} — ${row.summary} (referred ${date}) `;
-  item.appendChild(text);
+  text.textContent = row.summary;
+  const meta = document.createElement("span");
+  meta.className = "meta";
+  meta.textContent = `referred ${new Date(row.referred_on).toLocaleDateString()}`;
+  item.append(ref, text, meta);
 
   // Buttons render for anyone who can see a pending row — and only the
   // admin can see one, because the SELECT policy says so. A role check
   // here would just be a second query to prove what the database already
   // decided.
   if (canResolve) {
+    const actions = document.createElement("div");
+    actions.className = "actions";
     const approveButton = document.createElement("button");
+    approveButton.className = "btn btn-green btn-sm";
     approveButton.textContent = "Approve";
     approveButton.onclick = () => resolveReferral(row.id, "live");
 
     const rejectButton = document.createElement("button");
+    rejectButton.className = "btn btn-danger btn-sm";
     rejectButton.textContent = "Reject";
     rejectButton.onclick = () => resolveReferral(row.id, "rejected");
 
-    item.append(approveButton, rejectButton);
+    actions.append(approveButton, rejectButton);
+    item.appendChild(actions);
   }
   return item;
 }
@@ -100,17 +135,22 @@ function renderRow(row, canResolve) {
 function renderSections(rows) {
   for (const section of SECTIONS) {
     const matching = rows.filter((row) => row.status === section.status);
-    section.heading.textContent = `${section.title} (${matching.length})`;
+    section.count_el.textContent = `(${matching.length})`;
     section.body.innerHTML = "";
+    if (section.status === "pending_review" && navPendingCount) {
+      navPendingCount.textContent = matching.length ? String(matching.length) : "";
+    }
 
     if (matching.length === 0) {
       const message = document.createElement("p");
+      message.className = "empty";
       message.textContent = section.empty;
       section.body.appendChild(message);
       continue;
     }
 
     const list = document.createElement("ul");
+    list.className = "row-list";
     for (const row of matching) {
       list.appendChild(renderRow(row, section.canResolve));
     }
@@ -157,6 +197,7 @@ const { data: sessionData } = await supabase.auth.getSession();
 if (!sessionData.session) {
   renderSignedOut();
 } else {
+  renderChrome(sessionData.session);
   buildSections();
   await loadHouseholds();
 }
