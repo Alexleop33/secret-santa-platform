@@ -16,6 +16,7 @@ export const PAGES = [
   { href: "/links.html", label: "Referral links" },
   { href: "/exceptions.html", label: "Exceptions" },
   { href: "/settings.html", label: "Drive settings" },
+  { href: "/admins.html", label: "Admins" },
 ];
 
 const badges = {};
