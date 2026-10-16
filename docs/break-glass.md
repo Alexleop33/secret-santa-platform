@@ -37,11 +37,12 @@ Things that are **never** allowed, glass or no glass:
 
 ## Who
 
-The prod Supabase project lives in its own organization, and **Alex is its
-only member.** So in practice Alex runs the statement, with the second
-person's agreement in hand. If Alex is unreachable in an emergency, the admin
-has owner access to the organization's billing account and can add a member
-— that, too, gets a line in `decisions.md`.
+The prod Supabase project lives in its own organization with **one
+member**: David for now, Alex once it is transferred (decided 2026-10-16).
+So in practice that one person runs the statement, with the second
+person's agreement in hand. If they are unreachable in an emergency, the
+admin has owner access to the organization's billing account and can add a
+member — that, too, gets a line in `decisions.md`.
 
 ## How
 
@@ -74,8 +75,8 @@ has owner access to the organization's billing account and can add a member
 
 After the first prod deploy, the admin signs in once with Google on the live
 site. That creates her `auth.users` row and nothing else — she can see no
-households, because she isn't the admin yet. Then Alex runs, in the prod SQL
-editor:
+households, because she isn't the admin yet. Then the org's one member
+(David for now) runs, in the prod SQL editor:
 
 ```sql
 insert into profiles (id, role)
