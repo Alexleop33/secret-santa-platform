@@ -220,6 +220,25 @@ function renderDetail(household) {
         ? `Request changes is still in work. For now, email the family at ${email} and ask for the fix; a resubmission needs a new link.`
         : "Request changes is still in work."),
     );
+  } else if (household.status === "live") {
+    // Withdrawing is the one thing that can happen to a live household from
+    // here. Two clicks, no dialog: a browser confirm() would block the page.
+    const withdraw = el("button", "btn btn-danger", "Withdraw from the public list");
+    withdraw.type = "button";
+    const confirm = el("button", "btn btn-danger hidden", "Yes, withdraw " + household.ref_code);
+    confirm.type = "button";
+    const cancel = el("button", "btn btn-outline hidden", "Keep it live");
+    cancel.type = "button";
+    withdraw.onclick = () => {
+      withdraw.classList.add("hidden");
+      confirm.classList.remove("hidden");
+      cancel.classList.remove("hidden");
+    };
+    cancel.onclick = () => renderDetail(household);
+    confirm.onclick = () => decide(household.id, "withdrawn");
+    actions.append(withdraw, confirm, cancel);
+    decideCard.appendChild(actions);
+    decideCard.appendChild(el("p", "muted small", "Withdrawing takes the household off the list for good and deletes the family's contact email. There is no undo."));
   } else {
     actions.append(el("span", "muted small", "Decided. Nothing more to do here."));
     decideCard.appendChild(actions);

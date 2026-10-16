@@ -3,7 +3,7 @@
 -- still pending_review, and the table's check constraint only allows the
 -- three known statuses. Both are tested here.
 begin;
-select plan(3);
+select plan(4);
 
 insert into auth.users (id, email)
 values ('00000000-0000-4000-8000-000000000001', 'admin@example.test');
@@ -21,8 +21,17 @@ select set_config(
   true
 );
 
--- Neither of these rows is pending, so the policy hides them from UPDATE.
-update households set status = 'rejected' where ref_code = '#t1';
+-- A live row is visible to the admin (she may withdraw it), but live →
+-- rejected is not an allowed transition, so the trigger refuses it.
+select throws_ok(
+  $$ update households set status = 'rejected' where ref_code = '#t1' $$,
+  '42501',
+  null,
+  'the admin cannot change a live referral to rejected'
+);
+
+-- A rejected row is covered by no policy at all, so the update sees no
+-- rows and changes nothing, silently.
 update households set status = 'live' where ref_code = '#t2';
 
 -- A pending row can only move to live or rejected. Anything else is refused

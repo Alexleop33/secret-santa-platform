@@ -123,6 +123,23 @@ own words, you understand the slice.
   in the browser; six separate count queries would be more code and more
   ways to disagree with each other.
 
+### 8. Activity log and withdraw — issues #15 and #16
+
+- `activity` is written by a trigger on households: every insert and
+  every status change, with the actor's role (system, family, admin,
+  donor) worked out from the request's JWT. Pages never write to it.
+- The admin can withdraw a live household. That needed a second UPDATE
+  policy, which exposed a subtlety: permissive policies OR together, so
+  a live row would have passed one policy's row filter and the other's
+  new-row check. The allowed transitions now live in one `before update`
+  trigger, and the policies only say which rows the admin may touch.
+- `exceptions.html` is A3's shell: the activity log with an export, and
+  one exception card that exists today (pending more than two days).
+- **Say it back:** a policy answers "may this person touch this row?". It
+  cannot answer "may this row go from state A to state B?", because the
+  check clause never sees the old row. A trigger sees both, so the state
+  machine lives there.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close
