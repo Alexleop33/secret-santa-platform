@@ -15,7 +15,7 @@ const headers = fs.readFileSync(path.join(PUBLIC, "_headers"), "utf8");
 
 // The hosts the CSP lets scripts and connections reach. Anything else in a
 // page is a mistake, whichever way round it was introduced.
-const ALLOWED_HOSTS = ["https://esm.sh", "https://wiobafdpmzzrzzqavjbf.supabase.co"];
+const ALLOWED_HOSTS = ["https://esm.sh", "https://wiobafdpmzzrzzqavjbf.supabase.co", "https://drmbknjbaigfvhxobpav.supabase.co"];
 
 function externalUrls(source) {
   return [...source.matchAll(/https?:\/\/[^\s"'`)<>]+/g)].map((m) => m[0]);
