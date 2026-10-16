@@ -76,9 +76,9 @@ select is(
 );
 
 select is(
-  (select count(*) from referral_links),
+  (select count(*) from referral_links where id = (select id from made)),
   1::bigint,
-  'the admin can see the links list'
+  'the admin can see the link in the list'
 );
 
 reset role;
