@@ -68,6 +68,11 @@ Everything below is done once. Tick each box in the PR that lands it.
     - `https://dev.<pages-project>.pages.dev/**`
     - `https://*.<pages-project>.pages.dev/**` — PR previews
     - `http://localhost:3000/**` — the `SUPABASE_TARGET=dev npm start` escape hatch
+    - and the bare forms `https://*.<pages-project>.pages.dev` and
+      `http://localhost:3000`. The `/**` pattern does not match an origin
+      with no path, and the first preview fell back to the Site URL because
+      of it. `auth.js` now sends `origin/`, which `/**` does match, so the
+      bare forms are belt and braces.
 - [ ] Authentication → Sign In / Providers:
   - **Email: OFF.** The emailed link exists on laptops only.
   - **Google: ON**, with the *dev* OAuth client from step 3 below.
@@ -177,7 +182,8 @@ changes by hand only through [break-glass.md](break-glass.md).
       `public/config.js` (step 6).
 - [ ] Authentication → URL Configuration:
   - **Site URL:** `https://<pages-project>.pages.dev`
-  - **Redirect URLs:** `https://<pages-project>.pages.dev/**` and nothing
+  - **Redirect URLs:** `https://<pages-project>.pages.dev/**` and
+    `https://<pages-project>.pages.dev` (the bare origin; see dev §2) and nothing
     else. No wildcard, no localhost, no previews — prod is reached from the
     live site only.
 - [ ] Authentication → Sign In / Providers:
