@@ -13,6 +13,7 @@ export const PAGES = [
   { href: "/dashboard.html", label: "Dashboard" },
   { href: "/queue.html", label: "Approval queue", badge: "pending" },
   { href: "/links.html", label: "Referral links" },
+  { href: "/exceptions.html", label: "Exceptions" },
   { href: "/settings.html", label: "Drive settings" },
 ];
 
