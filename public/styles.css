@@ -1205,3 +1205,88 @@ details.section > summary .count {
     min-width: 0;
   }
 }
+
+/* ---------- Story, confirmation, my families (D3–D8) ---------- */
+
+.story-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.sponsor-steps {
+  padding-left: 1.3em;
+  margin: 0 0 16px;
+}
+
+.sponsor-steps li {
+  margin-bottom: 6px;
+}
+
+.confirmed-head {
+  text-align: center;
+  padding: 16px 0 24px;
+}
+
+.confirmed-mark {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: var(--green-100);
+  color: var(--green-700);
+  font-size: 1.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plain-list {
+  margin: 6px 0 12px;
+  padding-left: 1.2em;
+}
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checklist li {
+  padding: 6px 0;
+}
+
+.checklist li.done span {
+  text-decoration: line-through;
+  color: var(--ink-3);
+}
+
+.checklist .check {
+  margin: 0;
+  align-items: center;
+}
+
+.claim-card h2 {
+  margin-bottom: 2px;
+}
+
+.claim-card .two-col {
+  margin-top: 14px;
+}
+
+.claim-actions {
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.release-box {
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .story-layout {
+    grid-template-columns: 1fr;
+  }
+}
