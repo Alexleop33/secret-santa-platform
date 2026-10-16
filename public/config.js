@@ -28,8 +28,8 @@ const TARGETS = {
   },
   dev: {
     env: "dev",
-    url: "https://gxgfzafrxulzltikdkca.supabase.co",
-    publishableKey: "sb_publishable_3NOWW-FNhOxC2boZSVOVKQ_6AA3whlI",
+    url: "https://wiobafdpmzzrzzqavjbf.supabase.co",
+    publishableKey: "sb_publishable_vOsuTZRKh3_3pTpoXYm2Jw_4SzWW_31",
   },
   // Filled in by a human once the prod Supabase project exists
   // (docs/environments.md, prod step 6): the project URL and its
