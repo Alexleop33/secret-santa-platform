@@ -9,10 +9,10 @@ insert into auth.users (id, email)
 values ('00000000-0000-4000-8000-000000000001', 'admin@example.test');
 insert into profiles (id, role)
 values ('00000000-0000-4000-8000-000000000001', 'admin');
-insert into households (ref_code, summary, status, referred_on) values
-  ('#t1', 'test household, live', 'live', now()),
-  ('#t2', 'test household, rejected', 'rejected', now()),
-  ('#t3', 'test household, pending', 'pending_review', now());
+insert into households (ref_code, summary, status, referred_on, consent_wish_list) values
+  ('#t1', 'test household, live', 'live', now(), true),
+  ('#t2', 'test household, rejected', 'rejected', now(), true),
+  ('#t3', 'test household, pending', 'pending_review', now(), true);
 
 set local role authenticated;
 select set_config(

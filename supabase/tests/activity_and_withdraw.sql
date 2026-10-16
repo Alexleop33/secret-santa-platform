@@ -11,10 +11,10 @@ insert into profiles (id, role)
 values ('00000000-0000-4000-8000-000000000001', 'admin');
 
 -- Inserted as the database itself: logged as 'system'.
-insert into households (ref_code, summary, status, referred_on) values
-  ('#t1', 'test household, pending', 'pending_review', now()),
-  ('#t2', 'test household, live', 'live', now()),
-  ('#t3', 'test household, rejected', 'rejected', now());
+insert into households (ref_code, summary, status, referred_on, consent_wish_list) values
+  ('#t1', 'test household, pending', 'pending_review', now(), true),
+  ('#t2', 'test household, live', 'live', now(), true),
+  ('#t3', 'test household, rejected', 'rejected', now(), true);
 
 select is(
   (select count(*) from activity where target_ref_code in ('#t1', '#t2', '#t3') and action = 'referral_submitted' and actor_role = 'system'),

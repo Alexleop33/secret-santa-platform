@@ -302,3 +302,24 @@ rather than quietly talking to dev.
 - Only Alex is in the prod Supabase organization.
 - Every manual change to prod data is a dated line in `decisions.md`
   (`break-glass.md`).
+
+---
+
+## The retention purge — *Human, once, after the drive closes*
+
+Sixty days after the drive closes (Feb 12, 2027 for the 2026 drive) the
+family contact rows are deleted. Nobody runs SQL for this.
+
+- [ ] In the app, Drive settings → **Close the drive**. The public list
+      empties and claims stop. Nothing is deleted yet.
+- [ ] GitHub → Actions → **Retention purge** → *Run workflow*. Type `purge`
+      in the confirm box; leave *target* as `production`.
+- [ ] A required reviewer of the `production` environment approves the run.
+- [ ] The run links the project with the same token and password the deploy
+      uses and calls `purge_retained_contacts(...)` through
+      `supabase db query --linked`. The function refuses an open drive and
+      logs the number of rows it deleted to the activity log.
+- [ ] Record the run as a dated line in the product repo's `decisions.md`.
+
+To rehearse it, run the same workflow with *target* `development` against
+the sandbox first.
