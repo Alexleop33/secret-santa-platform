@@ -24,8 +24,16 @@
           <span class="small muted" id="whoami"></span>
           <a class="btn btn-outline btn-sm" href="/">Home</a>
         </header>
+
         <main class="console-content" id="queue-root">
-          <p class="muted">Loading…</p>
+          <div class="review">
+            <section class="card review-list">
+              <p class="eyebrow" id="pending-heading">Waiting</p>
+              <ul class="pick-list" id="pending-list"><li class="empty">Loading…</li></ul>
+            </section>
+            <section class="stack" id="detail"></section>
+          </div>
+          <div class="stack" id="decided"></div>
         </main>
       </div>
     </div>

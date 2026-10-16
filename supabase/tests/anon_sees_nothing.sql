@@ -29,15 +29,16 @@ select is(
   'anon sees no profiles'
 );
 
--- An anon UPDATE must change nothing. It touches zero rows because RLS hides
--- every row from it. We check the outcome as the superuser afterwards.
-update households set status = 'live' where ref_code = '#t1';
-reset role;
-select is(
-  (select status from households where ref_code = '#t1'),
-  'pending_review',
+-- An anon UPDATE is refused outright: anon has no UPDATE privilege on the
+-- table at all (revoked in the review-queue migration), so it never gets
+-- as far as a policy. An error, not a silent no-op.
+select throws_ok(
+  $$ update households set status = 'live' where ref_code = '#t1' $$,
+  '42501',
+  null,
   'anon cannot resolve a pending referral'
 );
+reset role;
 
 select * from finish();
 rollback;

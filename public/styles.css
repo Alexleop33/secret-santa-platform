@@ -845,3 +845,170 @@ details.section > summary .count {
     font-size: 1.5rem;
   }
 }
+
+/* ---------- Review pane (A2) ---------- */
+
+.review {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: start;
+}
+
+.review-list {
+  padding: 14px 10px;
+}
+
+.review-list .eyebrow {
+  padding: 0 10px 8px;
+}
+
+.pick-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pick-list .empty {
+  padding: 8px 10px;
+}
+
+.pick-list button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-left: 3px solid transparent;
+  padding: 12px 10px;
+  cursor: pointer;
+  display: grid;
+  gap: 3px;
+  font: inherit;
+}
+
+.pick-list button:hover {
+  background: var(--cream-2);
+}
+
+.pick-list button[aria-current="true"] {
+  background: var(--green-50);
+  border-left-color: var(--green-700);
+}
+
+.pick-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pick-top .ref {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.pick-top .meta,
+.pick-summary {
+  font-size: 0.88rem;
+  color: var(--ink-2);
+}
+
+.story-box {
+  background: var(--cranberry-50);
+  border: 1px solid var(--cranberry-100);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin: 0 0 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.person {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.person h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.person .sizes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.size {
+  background: var(--sand);
+  border-radius: var(--radius-sm);
+  padding: 1px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.person p {
+  margin: 6px 0 0;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.person p b {
+  color: var(--green-700);
+  font-weight: 600;
+}
+
+.check-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.check-list li {
+  display: flex;
+  gap: 10px;
+  padding: 6px 0;
+  align-items: flex-start;
+}
+
+.check-list .mark {
+  font-weight: 700;
+  width: 1.2em;
+  flex: none;
+  text-align: center;
+}
+
+.check-list .ok {
+  color: var(--green-700);
+}
+
+.check-list .info {
+  color: var(--ink-2);
+}
+
+.check-list .warn {
+  color: var(--amber-800);
+}
+
+.check-list .bad {
+  color: var(--cranberry);
+}
+
+@media (max-width: 900px) {
+  .review {
+    grid-template-columns: 1fr;
+  }
+}
