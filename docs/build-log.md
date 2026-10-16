@@ -89,6 +89,24 @@ own words, you understand the slice.
   all of it lands or none of it does. "Burn the link" and "save the
   household" cannot come apart.
 
+### 6. The approval queue, properly — issue #12
+
+- `queue.html` is now A2: the waiting list on the left, the selected
+  referral on the right as sponsors will see it, automatic checks, a
+  private note, and Approve / Reject. Approved and rejected sit below and
+  open read-only.
+- Through the API only `status` and `admin_note` can change on a
+  household. That is a column privilege (`grant update (status,
+  admin_note)`), which RLS cannot express — RLS is about rows.
+- Rejecting or withdrawing deletes the family's contact row by trigger, so
+  no page can forget to.
+- "Request changes" is a placeholder: families cannot edit after
+  submitting, so the admin emails them instead; the pane shows the address.
+- **Say it back:** three different tools guard three different things.
+  RLS decides *which rows* the admin can touch. A column grant decides
+  *which columns*. A trigger makes a consequence (delete the email) happen
+  no matter which page caused the change.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close
