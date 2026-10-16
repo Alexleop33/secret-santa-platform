@@ -148,8 +148,12 @@ if (urlError) {
 }
 
 // Strip error/token params from the address bar so a reload doesn't replay
-// a stale error and tokens don't linger visibly in the URL.
-history.replaceState(null, "", window.location.pathname);
+// a stale error and tokens don't linger visibly in the URL. Only when the
+// URL actually carried sign-in parameters: other pages use the query
+// string for their own purposes (queue.html?select=…), and those stay.
+if (/(^|[?#&])(error|error_description|access_token|refresh_token|code|type)=/.test(window.location.search + window.location.hash)) {
+  history.replaceState(null, "", window.location.pathname);
+}
 
 // Keeps the page in sync once sign-in finishes and on every sign-out — no
 // manual reload or re-render call needed. Skip the "INITIAL_SESSION" event:

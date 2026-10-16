@@ -107,6 +107,22 @@ own words, you understand the slice.
   *which columns*. A trigger makes a consequence (delete the email) happen
   no matter which page caused the change.
 
+### 7. Dashboard and roster export — issues #13 and #14
+
+- `dashboard.html` is A1: four tiles, the progress bar with both deadlines,
+  a needs-attention line, and the roster with a Review/Open link per row.
+  Everything is computed in the browser from one fetch of the households.
+- `public_counts` is a second public view: two numbers for the landing
+  page, both blank when the admin turns the public count off.
+- `csv.js` is the roster export, written by hand and unit-tested, because
+  the export is the fallback if the app breaks in December. Pending rows
+  are included; no contact column exists to leave out.
+- `auth.js` now only clears the address bar when it held sign-in
+  parameters, so `queue.html?select=…` survives.
+- **Say it back:** a few hundred rows is small. Fetch them once and count
+  in the browser; six separate count queries would be more code and more
+  ways to disagree with each other.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close
