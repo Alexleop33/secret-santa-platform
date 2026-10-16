@@ -296,6 +296,9 @@ async function load() {
   }
 
   households = data;
+  // The dashboard links here with ?select=<id>; honour it once, on load.
+  const requested = new URLSearchParams(window.location.search).get("select");
+  if (requested && households.some((h) => h.id === requested)) selectedId = requested;
   if (!households.some((h) => h.id === selectedId)) {
     selectedId = households.find((h) => h.status === "pending_review")?.id ?? null;
   }
