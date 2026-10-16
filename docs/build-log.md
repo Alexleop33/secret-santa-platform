@@ -38,6 +38,23 @@ own words, you understand the slice.
   elements and the stylesheet decides the look. That is what lets the
   Content-Security-Policy say "styles only from this site" and mean it.
 
+### 3. Campaign settings — issue #9
+
+- New `campaigns` table with one 2026 row, created by the migration with
+  bracketed placeholders; `households.campaign_id` points at it. The seed
+  fills in obviously fake contact details for the sandbox.
+- `public_campaign` is a **view** that lists only the public columns, so
+  anyone can read dates and the contact line but the drop-off address never
+  leaves the table. Only the admin reads or updates the table itself.
+- `is_admin()` is the one helper every later policy will call.
+- `settings.html` is the A5 top half: season, dates, rules. The dates-in-
+  order rule is a database check constraint, so a bad save is refused by
+  Postgres and the page just shows the message.
+- `console.js` holds the sidebar list and the "sign in first" card for
+  every coordinator page.
+- **Say it back:** RLS hides *rows*; a view hides *columns*. The address
+  is a column, so it needed a view, not a policy.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

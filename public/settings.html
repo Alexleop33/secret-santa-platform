@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sub for Santa — Drive settings</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="console">
+      <nav class="console-nav" aria-label="Coordinator console">
+        <a class="brand" href="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          <span><span class="name">Sub for Santa</span><span class="sub">Coordinator console</span></span>
+        </a>
+        <ul id="console-pages"></ul>
+      </nav>
+
+      <div class="console-main">
+        <header class="topbar">
+          <h1 id="page-title">Drive settings</h1>
+          <span class="spacer"></span>
+          <span class="pill pill-grey hidden" id="env-pill"></span>
+          <span class="small muted" id="whoami"></span>
+          <a class="btn btn-outline btn-sm" href="/">Home</a>
+        </header>
+
+        <main class="console-content" id="settings-root">
+          <form id="settings-form" class="stack hidden">
+            <div class="two-col">
+              <section class="card">
+                <h2>This season</h2>
+                <div class="form-row">
+                  <label class="field"><span>Organization name</span><input type="text" name="organization_name" required /></label>
+                  <label class="field"><span>Program name</span><input type="text" name="name" required /></label>
+                </div>
+                <div class="form-row">
+                  <label class="field"><span>Coordinator</span><input type="text" name="coordinator_name" required /></label>
+                  <label class="field"><span>Contact phone</span><input type="text" name="contact_phone" required /></label>
+                </div>
+                <label class="field"><span>Contact email</span><input type="email" name="contact_email" required /><span class="hint">Shown wherever a page says "questions go to…". Also the address on any still-in-work placeholder.</span></label>
+                <label class="field"><span>Drop-off address</span><input type="text" name="drop_off_address" required /><span class="hint">Shown to a sponsor only after they claim a household. Never on the public list.</span></label>
+                <label class="field"><span>Drop-off hours</span><input type="text" name="drop_off_hours" required /></label>
+              </section>
+
+              <section class="card">
+                <h2>Dates</h2>
+                <div class="form-row">
+                  <label class="field"><span>Nominations open</span><input type="date" name="nominations_open" required /></label>
+                  <label class="field"><span>Nominations close</span><input type="date" name="nominations_close" required /></label>
+                </div>
+                <div class="form-row">
+                  <label class="field"><span>Claims close</span><input type="date" name="claims_close" required /></label>
+                  <label class="field"><span>Gifts due</span><input type="date" name="gifts_due" required /></label>
+                </div>
+                <p class="notice notice-green small">Sponsors see these dates on every screen. Each one must come after the one before it.</p>
+              </section>
+            </div>
+
+            <section class="card">
+              <h2>Rules</h2>
+              <ul class="row-list">
+                <li><span><strong>Approval required before a referral goes public</strong><br /><span class="muted small">Built in — a household is never visible until the coordinator approves it.</span></span><span class="actions"><span class="pill pill-live">Always on</span></span></li>
+                <li><span><strong>No family contact details, ever</strong><br /><span class="muted small">Built in — the app never stores a family's name, address or phone number. Sponsors drop gifts at the address above.</span></span><span class="actions"><span class="pill pill-live">Always on</span></span></li>
+                <li><span><strong>Show the remaining count publicly</strong><br /><span class="muted small">Displays "N families still need a sponsor" on the landing page.</span></span><span class="actions"><label class="check"><input type="checkbox" name="show_public_count" /> <span>On</span></label></span></li>
+                <li><span><strong>Maximum households per sponsor</strong><br /><span class="muted small">Keeps one generous donor from claiming the whole list. 1 to 5.</span></span><span class="actions"><input type="number" name="sponsor_cap" min="1" max="5" required /></span></li>
+              </ul>
+            </section>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-green">Save settings</button>
+              <span class="status-line" id="save-status"></span>
+            </div>
+
+            <section class="card card-tinted">
+              <h2>Close out the season</h2>
+              <p class="muted">Available after the drop-off deadline. Still in work — the totals, roster export and "close the drive" land in a later slice.</p>
+            </section>
+          </form>
+          <p class="muted" id="settings-status">Loading…</p>
+        </main>
+      </div>
+    </div>
+
+    <script src="/env.js"></script>
+    <script type="module" src="settings.js"></script>
+  </body>
+</html>
