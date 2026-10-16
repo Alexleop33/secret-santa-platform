@@ -8,15 +8,15 @@
 // nothing to anyone else whatever link they follow; a donor's page returns
 // only their own claims. RLS decides all of that, not this file.
 import { supabase } from "./auth.js";
+import { samePage } from "./paths.js";
 
 const nav = document.getElementById("site-nav");
-const current = window.location.pathname;
 
 function link(href, label) {
   const a = document.createElement("a");
   a.href = href;
   a.textContent = label;
-  if (current === href) a.setAttribute("aria-current", "page");
+  if (samePage(window.location.pathname, href)) a.setAttribute("aria-current", "page");
   return a;
 }
 

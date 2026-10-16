@@ -8,6 +8,7 @@
 // what (CLAUDE.md, "page-level access checks are UX, not security").
 import { supabase } from "./auth.js";
 import { env } from "./config.js";
+import { samePage } from "./paths.js";
 
 export const PAGES = [
   { href: "/dashboard.html", label: "Dashboard" },
@@ -32,7 +33,7 @@ export function mountConsole({ title }) {
     const link = document.createElement("a");
     link.href = page.href;
     link.textContent = page.label;
-    if (window.location.pathname === page.href) {
+    if (samePage(window.location.pathname, page.href)) {
       link.setAttribute("aria-current", "page");
     }
     if (page.badge) {
