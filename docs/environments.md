@@ -159,19 +159,23 @@ human, and ticked in PR 3. The rule afterwards: **nobody changes prod by
 hand.** Code reaches it only through `dev` → `main` → an approved deploy. Data
 changes by hand only through [break-glass.md](break-glass.md).
 
-### 1. Supabase — a new project in its own organization — *Human (Alex)*
+### 1. Supabase — a new project in its own organization — *Human (David, for now)*
 
 - [ ] supabase.com → **New organization**, named for the nonprofit's drive
-      (not "Alex's org"). Prod lives alone in it: a separate org means a
+      (not a person's). Prod lives alone in it: a separate org means a
       separate member list and a separate bill, so a mistake in the sandbox
-      org can't touch it.
+      org can't touch it. **Decided 2026-10-16:** the org lives under
+      David's accounts for now, so the setup could happen before Alex was
+      available, and is transferable to Alex; the product repo's
+      `decisions.md` carries the line.
 - [ ] **Plan:** Pro is recommended — the free plan **pauses projects after a
       week of inactivity**, and this one must be awake from the first
       referral in October through the retention purge in February, and Pro
       adds daily backups. The choice and the cost are the nonprofit's call;
-      record it in `decisions.md` either way.
-- [ ] **Members:** Alex only. Nobody else is added without a `decisions.md`
-      line. Not David, not an agent.
+      record it in `decisions.md` either way. **As of 2026-10-16 prod is on
+      the free plan**, so the pause risk is live until that changes.
+- [ ] **Members:** one person — David for now, Alex once transferred.
+      Nobody else is added without a `decisions.md` line. Never an agent.
 - [ ] **New project** in that org, named `sub-for-santa-prod`, region
       closest to the admin. Generate a strong database password and store
       it in a password manager — it is needed once below and never again by
@@ -308,7 +312,8 @@ rather than quietly talking to dev.
 - `seed.sql` never runs against prod. The workflow has no `--include-seed`.
   `households` is empty after the first deploy, and only referrals fill it.
 - No `.mcp.json` entry, no `supabase link`, no agent, ever, for prod.
-- Only Alex is in the prod Supabase organization.
+- One person is in the prod Supabase organization: David for now, Alex
+  once it is transferred (decided 2026-10-16). Never an agent.
 - Every manual change to prod data is a dated line in `decisions.md`
   (`break-glass.md`).
 
