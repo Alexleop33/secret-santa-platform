@@ -11,9 +11,13 @@ insert into households (ref_code, summary, status, referred_on) values
 
 -- Remember what the sandbox already holds, so the numbers below are
 -- differences, not absolutes.
+-- need_sponsor means "on the public list": live, unclaimed, drive open.
+-- Count it the way the list does, not by status alone, because the
+-- sandbox may already hold claimed households.
+update campaigns set status = 'open' where id = '00000000-0000-4000-a000-000000002026';
 create temporary table before as
   select
-    (select count(*) from households where status = 'live') as live,
+    (select count(*) from public_households) as live,
     (select count(*) from households where status = 'pending_review') as pending;
 grant select on before to anon;
 

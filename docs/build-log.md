@@ -201,6 +201,21 @@ own words, you understand the slice.
   why releasing a claim puts the household straight back on the list
   without anyone editing the household.
 
+### 13. Close-out and the retention purge — issue #25
+
+- Closing the drive is a status on the campaign row. The public views
+  check it, so the list empties; the claim function checks it, so claims
+  stop. Nothing is deleted by closing. Reopening is allowed.
+- `purge_retained_contacts()` deletes the family contact rows of a
+  *closed* drive and logs the count. No API role can call it: the only
+  caller is `.github/workflows/retention-purge.yml`, run by hand, gated by
+  the production environment's reviewers, and it requires typing "purge".
+- `season_totals` is an admin-only view for the close-out card.
+- **Say it back:** closing and purging are two separate, deliberate acts.
+  The purge refuses to run on an open drive, so the order cannot be
+  skipped, and it runs through an approved workflow, so it is always on
+  the record and never typed into a SQL editor.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close
