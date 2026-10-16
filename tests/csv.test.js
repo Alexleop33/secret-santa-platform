@@ -34,3 +34,16 @@ test("missing values become empty cells", () => {
 test("no rows gives just the header", () => {
   assert.equal(toCsv([], COLUMNS), "id,household,status\r\n");
 });
+
+test("a value that would be a formula in a spreadsheet is neutralised", () => {
+  for (const payload of ['=IMPORTXML("https://x.test","//a")', "+1+1", "-2", "@SUM(A1)", "\tcmd"]) {
+    const csv = toCsv([{ id: "#1", household: payload, status: "live" }], COLUMNS);
+    const cell = csv.split("\r\n")[1].split(",").slice(1, -1).join(",");
+    assert.ok(cell.startsWith("\"'"), `${JSON.stringify(payload)} must be prefixed with an apostrophe and quoted, got ${cell}`);
+  }
+});
+
+test("ordinary text is not touched by the formula guard", () => {
+  const csv = toCsv([{ id: "#1", household: "A family of four", status: "live" }], COLUMNS);
+  assert.equal(csv.split("\r\n")[1], "#1,A family of four,live");
+});
