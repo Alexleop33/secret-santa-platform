@@ -167,6 +167,27 @@ own words, you understand the slice.
   public may see some columns of a row but not others, the answer is a
   view that only selects the public ones, and the public reads the view.
 
+### 11. Sponsoring: story, claim, confirmation, my families — issues #20, #21, #22
+
+- Every donor write is a function that checks the caller itself:
+  `claim_household`, `mark_delivered`, `release_claim`, `set_item_bought`.
+  Donors read their own claims through `my_claims`, `my_household_members`
+  and `my_wish_items`, views filtered by `auth.uid()`. No donor policy
+  exists on the tables.
+- The race is settled by the partial unique index: the second of two
+  simultaneous claims fails on it, and the function turns that into
+  `already_claimed`, which the story page shows as D9.
+- `drop_off_details()` is the only way a donor sees the drop-off address,
+  and only while holding a claim. There is no family contact card.
+- Releasing clears the previous sponsor's ticks (trigger), returns the
+  household to the list (the view), and logs it (trigger).
+- A donor's profile row appears on their first claim; it grants nothing.
+- **Say it back:** the database does not trust the page. The page asks a
+  function to claim; the function checks who is asking, whether the
+  household is live, whether claims are open, and the cap; and the unique
+  index decides the race. If two people click at once, exactly one wins,
+  and no JavaScript had to be clever about it.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

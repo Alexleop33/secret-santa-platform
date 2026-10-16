@@ -152,6 +152,19 @@ if (urlError) {
 } else {
   const { data } = await supabase.auth.getSession();
   render(data.session);
+  continueAfterSignIn(data.session);
+}
+
+// A page that needed a sign-in (the story page, before claiming) leaves
+// where to go back to in sessionStorage. Once a session exists, go there.
+// Only a path on this site is honoured, never a full URL.
+function continueAfterSignIn(session) {
+  if (!session) return;
+  const next = sessionStorage.getItem("next");
+  if (next && next.startsWith("/") && !next.startsWith("//")) {
+    sessionStorage.removeItem("next");
+    window.location.href = next;
+  }
 }
 
 // Strip error/token params from the address bar so a reload doesn't replay
@@ -171,4 +184,5 @@ if (/(^|[?#&])(error|error_description|access_token|refresh_token|code|type)=/.t
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === "INITIAL_SESSION") return;
   render(session);
+  if (event === "SIGNED_IN") continueAfterSignIn(session);
 });
