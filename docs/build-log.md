@@ -70,6 +70,25 @@ own words, you understand the slice.
   link. A fingerprint can confirm a link is genuine but cannot be turned
   back into one, so a leaked database is not a pile of working links.
 
+### 5. The family referral form — issue #11
+
+- Three new tables: `household_members` (a role from a fixed list and an
+  age, never a name), `wish_items` (one row per item, split out of the
+  comma lists so a sponsor can tick them later), `household_contacts` (the
+  family's email, alone in its own table). None has an INSERT policy.
+- `submit_referral(token, json)` is the only way in: one transaction that
+  locks the link row, checks it, checks every free-text field for a phone
+  number, email or street address, writes everything, and burns the link.
+  Two submissions racing on one link queue up on the lock and the second
+  finds it used.
+- `refer.html` is C1 rewritten for the family. The same three patterns
+  warn while typing; a school name warns but does not block, because that
+  is a judgement for the coordinator.
+- **Say it back:** the form never writes to a table. It hands the database
+  one JSON document and one token, and a single function decides whether
+  all of it lands or none of it does. "Burn the link" and "save the
+  household" cannot come apart.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

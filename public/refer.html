@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sub for Santa — Refer your household</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="brand-bar"></div>
+    <header class="site-header">
+      <div class="inner">
+        <a class="brand" href="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          <span><span class="name">Sub for Santa</span><span class="sub" id="org-line">2026 gift drive</span></span>
+        </a>
+      </div>
+    </header>
+
+    <main class="page page-narrow" id="refer-root">
+      <p class="notice notice-green" id="rule-line">Nothing here is public until the coordinator approves it. Checking your link…</p>
+
+      <div id="link-message" class="card hidden"></div>
+
+      <form id="refer-form" class="stack hidden" novalidate>
+        <section class="card">
+          <h2><span class="muted">1</span> About your household</h2>
+          <label class="field">
+            <span>One line that describes your household</span>
+            <input type="text" name="summary" maxlength="120" required placeholder="e.g. Household of 4 — mom & three kids, ages 3–9" />
+            <span class="hint">No names. Sponsors see this line first.</span>
+          </label>
+          <div class="notice notice-amber small hidden" data-warning-for="summary"></div>
+        </section>
+
+        <section class="card">
+          <h2><span class="muted">2</span> Your story <span class="small muted">— shown to sponsors only if you tick the box in step 5</span></h2>
+          <label class="field">
+            <span>What should a sponsor know?</span>
+            <textarea name="story" maxlength="1500" placeholder="A few sentences in your own words. What changed this year, and what would help most."></textarea>
+            <span class="hint">Leave out last names, your children's school, and street names — anything that could identify you. The coordinator reads this before anyone else does.</span>
+          </label>
+          <div class="notice notice-amber small hidden" data-warning-for="story"></div>
+        </section>
+
+        <section class="card">
+          <h2><span class="muted">3</span> Who is in the household</h2>
+          <p class="muted small">One block per person. Sizes matter more than brands.</p>
+          <div id="members" class="stack"></div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" id="add-member">Add another person</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2><span class="muted">4</span> How the coordinator reaches you</h2>
+          <label class="field">
+            <span>Your email address</span>
+            <input type="email" name="email" maxlength="200" required placeholder="you@example.com" />
+            <span class="hint">Only the coordinator can see this. It is never shown to sponsors, never on the public list, and it is how they reach you if something needs fixing. No phone number is asked for.</span>
+          </label>
+        </section>
+
+        <section class="card">
+          <h2><span class="muted">5</span> Consent</h2>
+          <label class="check"><input type="checkbox" name="consent_wish_list" required /> <span>An adult in this household agrees that the wish list and the one-line description can be shown to sponsors.</span></label>
+          <label class="check"><input type="checkbox" name="consent_story" /> <span>The story in step 2 can be shown to sponsors too. <span class="muted">Optional — leave it unticked and only the coordinator reads it.</span></span></label>
+          <p class="muted small">No photos are collected, now or later.</p>
+        </section>
+
+        <div class="notice notice-red hidden" id="submit-error"></div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submit">Submit for review</button>
+          <span class="status-line" id="submit-status"></span>
+        </div>
+      </form>
+
+      <div class="card hidden" id="done"></div>
+    </main>
+
+    <template id="member-template">
+      <div class="card card-tinted member">
+        <div class="form-row">
+          <label class="field">
+            <span>Who</span>
+            <select name="role" required>
+              <option value="boy">Boy</option>
+              <option value="girl">Girl</option>
+              <option value="child">Child</option>
+              <option value="mom">Mom</option>
+              <option value="dad">Dad</option>
+              <option value="grandmother">Grandmother</option>
+              <option value="grandfather">Grandfather</option>
+              <option value="adult">Another adult</option>
+            </select>
+          </label>
+          <label class="field age-field">
+            <span>Age</span>
+            <input type="number" name="age" min="0" max="120" required />
+          </label>
+        </div>
+        <div class="form-row">
+          <label class="field"><span>Clothing size</span><input type="text" name="clothing_size" maxlength="40" placeholder="e.g. Shirt 8, or Women's M" /></label>
+          <label class="field"><span>Shoe size</span><input type="text" name="shoe_size" maxlength="40" placeholder="e.g. Size 1" /></label>
+        </div>
+        <div class="form-row">
+          <label class="field"><span>Needs</span><input type="text" name="needs" maxlength="200" placeholder="Winter coat, jeans" /><span class="hint">Separate items with commas.</span></label>
+          <label class="field"><span>Would love</span><input type="text" name="would_love" maxlength="200" placeholder="Chapter books" /></label>
+        </div>
+        <div class="notice notice-amber small hidden" data-warning-for="member"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline btn-sm remove-member">Remove this person</button>
+        </div>
+      </div>
+    </template>
+
+    <script src="/env.js"></script>
+    <script type="module" src="refer.js"></script>
+  </body>
+</html>

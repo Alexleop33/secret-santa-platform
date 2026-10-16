@@ -1,0 +1,260 @@
+// The referral form, filled in by the family. One sitting, one submit.
+//
+// This page does not import auth.js: nobody signs in here, and auth.js
+// rewrites the address bar on load, which would wipe the link's token out
+// of the URL fragment before it was read. It makes its own Supabase client
+// from the same config instead.
+//
+// The token is read from `#t=…`. Browsers never send the fragment to a
+// server, so the token stays out of every request log.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.117.3";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: false, detectSessionInUrl: false },
+});
+
+const token = new URLSearchParams(window.location.hash.slice(1)).get("t") || "";
+
+const ruleLine = document.getElementById("rule-line");
+const linkMessage = document.getElementById("link-message");
+const form = document.getElementById("refer-form");
+const membersRoot = document.getElementById("members");
+const memberTemplate = document.getElementById("member-template");
+const submitButton = document.getElementById("submit");
+const submitStatus = document.getElementById("submit-status");
+const submitError = document.getElementById("submit-error");
+const done = document.getElementById("done");
+
+let campaign = null;
+
+// ---------- Saying what is wrong with a link ----------
+
+function showLinkMessage(title, body) {
+  linkMessage.innerHTML = "";
+  const heading = document.createElement("h2");
+  heading.textContent = title;
+  const text = document.createElement("p");
+  text.textContent = body;
+  linkMessage.append(heading, text);
+  if (campaign?.contact_email) {
+    const contact = document.createElement("p");
+    contact.className = "muted";
+    contact.textContent = `Questions? Email the coordinator at ${campaign.contact_email}.`;
+    linkMessage.appendChild(contact);
+  }
+  linkMessage.classList.remove("hidden");
+  ruleLine.classList.add("hidden");
+}
+
+// ---------- The text guard, client side ----------
+//
+// The same three patterns the database refuses, so the family hears about
+// it while typing instead of on submit. Plus one the database leaves to a
+// human: a school name. That one only warns.
+
+const BLOCKING = [
+  [/\d{3}[-.\s)]*\d{3}[-.\s]*\d{4}/, "a phone number"],
+  [/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i, "an email address"],
+  [/\d+\s+[a-z]+\s+(st|street|ave|avenue|rd|road|dr|drive|ln|lane|blvd|ct|court|way|pl|place|cir|circle)\b/i, "a street address"],
+];
+const SCHOOL = /\b(school|elementary|academy|kindergarten|preschool|high school|middle school)\b/i;
+
+function problemsIn(text) {
+  const blocking = BLOCKING.filter(([pattern]) => pattern.test(text)).map(([, label]) => label);
+  const warning = SCHOOL.test(text);
+  return { blocking, warning };
+}
+
+function updateWarning(target, text) {
+  const { blocking, warning } = problemsIn(text);
+  if (blocking.length) {
+    target.textContent = `This looks like it contains ${blocking.join(" and ")}. Please take it out — the coordinator reaches you by email instead.`;
+    target.classList.remove("hidden");
+    return true;
+  }
+  if (warning) {
+    target.textContent = "This mentions a school. Naming one can identify a family, so the coordinator may ask you to remove it.";
+    target.classList.remove("hidden");
+    return false;
+  }
+  target.classList.add("hidden");
+  return false;
+}
+
+function watchField(input, warningTarget) {
+  input.addEventListener("input", () => updateWarning(warningTarget, input.value));
+}
+
+// ---------- People ----------
+
+const CHILD_ROLES = new Set(["boy", "girl", "child"]);
+
+function addMember() {
+  const block = memberTemplate.content.firstElementChild.cloneNode(true);
+  const role = block.querySelector('[name="role"]');
+  const ageField = block.querySelector(".age-field");
+  const age = block.querySelector('[name="age"]');
+  const warning = block.querySelector('[data-warning-for="member"]');
+
+  function syncAge() {
+    const isChild = CHILD_ROLES.has(role.value);
+    ageField.classList.toggle("hidden", !isChild);
+    age.required = isChild;
+    if (!isChild) age.value = "";
+  }
+  role.addEventListener("change", syncAge);
+  syncAge();
+
+  for (const name of ["clothing_size", "shoe_size", "needs", "would_love"]) {
+    const input = block.querySelector(`[name="${name}"]`);
+    input.addEventListener("input", () => {
+      const all = ["clothing_size", "shoe_size", "needs", "would_love"]
+        .map((n) => block.querySelector(`[name="${n}"]`).value)
+        .join(" \n ");
+      updateWarning(warning, all);
+    });
+  }
+
+  block.querySelector(".remove-member").onclick = () => {
+    if (membersRoot.children.length > 1) block.remove();
+  };
+
+  membersRoot.appendChild(block);
+}
+
+function readMembers() {
+  return [...membersRoot.querySelectorAll(".member")].map((block) => {
+    const value = (name) => block.querySelector(`[name="${name}"]`).value.trim();
+    return {
+      role: value("role"),
+      age: CHILD_ROLES.has(value("role")) ? Number(value("age")) : null,
+      clothing_size: value("clothing_size"),
+      shoe_size: value("shoe_size"),
+      needs: value("needs"),
+      would_love: value("would_love"),
+    };
+  });
+}
+
+// ---------- Submit ----------
+
+function readForm() {
+  return {
+    summary: form.elements.summary.value.trim(),
+    story: form.elements.story.value.trim(),
+    email: form.elements.email.value.trim(),
+    consent_wish_list: form.elements.consent_wish_list.checked,
+    consent_story: form.elements.consent_story.checked,
+    members: readMembers(),
+  };
+}
+
+function showSubmitError(message) {
+  submitError.textContent = message;
+  submitError.classList.remove("hidden");
+  submitError.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+form.onsubmit = async (event) => {
+  event.preventDefault();
+  submitError.classList.add("hidden");
+
+  // The browser's own required/maxlength checks first.
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  const referral = readForm();
+  const texts = [referral.summary, referral.story, ...referral.members.flatMap((m) => [m.needs, m.would_love, m.clothing_size, m.shoe_size])];
+  const blocking = texts.flatMap((text) => problemsIn(text).blocking);
+  if (blocking.length) {
+    showSubmitError(`Please take out ${[...new Set(blocking)].join(" and ")} before submitting. The coordinator reaches you by email.`);
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitStatus.textContent = "Submitting…";
+
+  // The database does every check again and either writes everything or
+  // nothing. Its message is written for the family, so it is shown as is.
+  const { data, error } = await supabase.rpc("submit_referral", {
+    p_token: token,
+    p_referral: referral,
+  });
+
+  submitButton.disabled = false;
+  submitStatus.textContent = "";
+
+  if (error) {
+    showSubmitError(error.message);
+    return;
+  }
+
+  showDone(data);
+};
+
+function showDone(refCode) {
+  form.classList.add("hidden");
+  ruleLine.classList.add("hidden");
+  done.innerHTML = "";
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "eyebrow";
+  eyebrow.textContent = "Submitted";
+  const heading = document.createElement("h2");
+  heading.textContent = `Your referral is ${refCode}`;
+  const body = document.createElement("p");
+  body.textContent = "The coordinator reviews every referral before it appears to sponsors, usually within a couple of days. Nothing is public yet. Write the number down — it is how the coordinator will refer to your household, and it is the only handle sponsors ever see.";
+  const next = document.createElement("p");
+  next.className = "muted";
+  next.textContent = campaign?.contact_email
+    ? `If anything needs changing, email the coordinator at ${campaign.contact_email} and quote ${refCode}.`
+    : `If anything needs changing, contact the coordinator and quote ${refCode}.`;
+  done.append(eyebrow, heading, body, next);
+  done.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ---------- Start ----------
+
+async function start() {
+  const { data: campaigns } = await supabase.from("public_campaign").select("*").limit(1);
+  campaign = campaigns?.[0] ?? null;
+  if (campaign) {
+    document.getElementById("org-line").textContent = `${campaign.organization_name} · ${campaign.year} gift drive`;
+    ruleLine.textContent = `Nothing here is public until the coordinator approves it. Nominations close ${new Date(campaign.nominations_close + "T00:00").toLocaleDateString(undefined, { month: "long", day: "numeric" })}.`;
+  }
+
+  if (!token) {
+    showLinkMessage("This page needs a link", "Referrals open through a link from the coordinator. If you were sent one, open it exactly as it was sent to you.");
+    return;
+  }
+
+  const { data: status, error } = await supabase.rpc("referral_link_status", { p_token: token });
+  if (error) {
+    showLinkMessage("Something went wrong", `Couldn't check your link: ${error.message}`);
+    return;
+  }
+
+  if (status === "used") {
+    showLinkMessage("This link has already been used", "A referral was already submitted through it. You did nothing wrong — each link works once.");
+    return;
+  }
+  if (status === "expired") {
+    showLinkMessage("This link has expired", "Links last seven days. Ask the coordinator for a new one.");
+    return;
+  }
+  if (status !== "valid") {
+    showLinkMessage("This link isn't recognised", "Check that it was copied in full, or ask the coordinator for a new one.");
+    return;
+  }
+
+  watchField(form.elements.summary, form.querySelector('[data-warning-for="summary"]'));
+  watchField(form.elements.story, form.querySelector('[data-warning-for="story"]'));
+  document.getElementById("add-member").onclick = addMember;
+  addMember();
+  form.classList.remove("hidden");
+}
+
+await start();
