@@ -272,6 +272,21 @@ own words, you understand the slice.
   — on a laptop in Docker and on the hosted project. The deploy applies
   nothing a developer has not already run locally.
 
+### 18. Prod exists, under David's accounts for now — issue #24
+
+- The live Supabase project `sub-for-santa-prod` (ref
+  `drmbknjbaigfvhxobpav`) sits in a new org under David's accounts, so the
+  setup could happen before Alex was available. Transferable to Alex; the
+  product repo's `decisions.md` carries the line. The docs that said
+  "Alex only" now say "one person: David for now".
+- `config.js` and `_headers` carry the prod project (#59). Nothing is
+  reachable until the first Deploy prod is approved at the production
+  environment gate, which also needs the three production secrets.
+- Prod is on the free plan for now; the auto-pause risk is written down.
+- **Say it back:** the rule was never "Alex"; the rule is "one named
+  person, never an agent, every exception dated". The name changed, the
+  rule did not.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

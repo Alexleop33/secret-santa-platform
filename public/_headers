@@ -10,12 +10,11 @@
 #
 #   default-src 'self'      everything not listed below: this site only
 #   script-src              our own scripts, plus the CDN import in auth.js
-#   connect-src             fetch/XHR: our own origin and the Supabase API.
-#                           The prod project's host is added here by the
-#                           same PR that fills in config.js (docs/
-#                           environments.md, prod step 6); until then the
-#                           live site can't reach any database, which is
-#                           the safe failure.
+#   connect-src             fetch/XHR: our own origin and the two Supabase
+#                           projects. One file serves the demo site and the
+#                           live site, so both hosts are listed; config.js
+#                           decides which one a page actually talks to, by
+#                           hostname, and never both.
 #   img-src                 our own images; data: for any inline icon
 #   font-src 'self'         the two font files in public/fonts, nothing from Google
 #   frame-ancestors 'none'  nobody may put this site in an <iframe>
@@ -24,6 +23,6 @@
 # nosniff: the browser must trust our Content-Type, not guess.
 # no-referrer: never tell another site which page someone came from.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://wiobafdpmzzrzzqavjbf.supabase.co; img-src 'self' data:; style-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://wiobafdpmzzrzzqavjbf.supabase.co https://drmbknjbaigfvhxobpav.supabase.co; img-src 'self' data:; style-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer

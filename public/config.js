@@ -31,14 +31,13 @@ const TARGETS = {
     url: "https://wiobafdpmzzrzzqavjbf.supabase.co",
     publishableKey: "sb_publishable_vOsuTZRKh3_3pTpoXYm2Jw_4SzWW_31",
   },
-  // Filled in by a human once the prod Supabase project exists
-  // (docs/environments.md, prod step 6): the project URL and its
-  // *publishable* key, both public by design. Until then the live site
-  // refuses to start rather than quietly talking to dev.
+  // The live project (docs/environments.md, prod step 6). The URL and the
+  // *publishable* key are public by design; RLS on that project is what
+  // protects the data. Filled in 2026-10-16.
   prod: {
     env: "prod",
-    url: null,
-    publishableKey: null,
+    url: "https://drmbknjbaigfvhxobpav.supabase.co",
+    publishableKey: "sb_publishable_HaETiLCEGJVYXi5RtPN41g_uxANrVCv",
   },
 };
 
