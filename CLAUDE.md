@@ -235,16 +235,35 @@ claiming doesn't open until after Nov 6, so it can land two weeks later.
 
 ## The design reference
 
-The prototype is a single 1,207-line HTML file built by Alex's mom:
-`https://claude.ai/code/artifact/2a8412ec-789a-4233-833d-f666df71903d`
+`docs/handbook/` is the design reference: a journey map, seven personas and
+21 annotated mockups (D1–D10 donor, J1 co-sponsor, C1–C4 referral,
+A1–A6 coordinator), each with a "gaps and open questions" box. Start at
+[docs/handbook/README.md](docs/handbook/README.md). It was captured from the
+prototype Alex's mom built; the prototype itself is no longer reachable.
 
 **It is the design reference, not the codebase.** Don't port it. Read it for
 what the screens should feel like, then build the real thing.
 
-One thing it demonstrates that **cannot be built**: claim a household, unlock
-their name and phone. No PII means delivery handoff moves offline — donors buy
-against the household code and drop gifts at a central location. The app will
-never tell anyone where to drive.
+**Where the mockups and the hard rules disagree, the rules win.** The
+handbook draws these, and none of them get built:
+
+- **Family contact unlocked on claim** (D5, D6, D7, A2 "reveal for review",
+  C1 section 4, A5's locked toggle). No PII means delivery moves offline —
+  donors buy against the household code and drop gifts at a central
+  location. The app will never tell anyone where to drive.
+- **Photos** (C1, A4, D9). Never.
+- **A Stripe link** (D3's gap note). No payments, ever.
+- **Co-sponsor J1** and the **thank-you relay A4/D7**: on the v1 defer list.
+- **Provider accounts** (C1–C4 "My referral"): providers are not users; the
+  admin creates referral links and the family fills the form (decided
+  2026-10-13).
+- **"Request changes" and C3**: a family cannot edit after submitting, so
+  there is no recipient. A still-in-work placeholder stands in its place.
+- **Viewer flags** (D3 → A3): skipped for v1.
+
+The palette and type come from the mockups: cream ground, deep green
+coordinator console, cranberry donor action, amber for anything pending,
+Manrope headings over IBM Plex Sans. Light theme only.
 
 ## Working with Alex
 
