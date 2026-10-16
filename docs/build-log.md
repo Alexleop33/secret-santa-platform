@@ -216,6 +216,20 @@ own words, you understand the slice.
   skipped, and it runs through an approved workflow, so it is always on
   the record and never typed into a SQL editor.
 
+### 14. Hardening — issue #26
+
+- The consent gate is now a database rule: the transition trigger refuses
+  pending → live unless the wish-list consent is true. Seven older test
+  fixtures had been approving households without it, and broke, which is
+  the gate working.
+- `hardening.sql` is the sweep: a signed-in donor reads zero rows directly
+  from every table that is not theirs, whatever views sit on top.
+- README rewritten for the app as built; CLAUDE.md's data-model sketch
+  points at it; the retention purge is in the environments checklist.
+- **Say it back:** a disabled button is a courtesy; a trigger is a rule.
+  The approval page already refused to approve without consent, but only
+  the database can refuse every page and every tool at once.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

@@ -199,19 +199,13 @@ Assume JavaScript is familiar — Alex has built a React PWA, so the language is
 known even though the framework is gone. **Do not assume depth in SQL, backend
 architecture, or RLS** — explain those.
 
-## Data model sketch
+## Data model
 
 Everything hangs off `campaigns`. Resist adding an `organizations` table.
-
-| Table | Columns |
-|---|---|
-| `campaigns` | name, year, the three dates, status |
-| `households` | campaign_id, ref_code (`#14`), story text, status |
-| `household_members` | household_id, age, gender, notes — **no names** |
-| `wish_items` | household_id, label |
-| `claims` | household_id, donor_id, status, claimed_at, released_at |
-| `users` | email, role (caseworker / coordinator) |
-| `activity` | campaign_id, actor, action, target, timestamp |
+The tables as built, who reads each one and through which view, are in the
+README's "Data model" section; the migrations in `supabase/migrations/`
+are the source of truth and every one is covered by a pgTAP file in
+`supabase/tests/`.
 
 ## Scope for v1
 
