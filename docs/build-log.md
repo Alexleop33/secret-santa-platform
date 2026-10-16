@@ -140,6 +140,16 @@ own words, you understand the slice.
   check clause never sees the old row. A trigger sees both, so the state
   machine lives there.
 
+### 9. The database door is closed — issue #17
+
+- `.mcp.json` is deleted. It gave an agent arbitrary SQL against the
+  sandbox database; CLAUDE.md said it had to go before anyone outside Alex
+  and his mum could reach the site. Nothing in this build used it: every
+  policy is checked by `supabase test db`.
+- **Say it back:** a book (the skills folder) can be read and does
+  nothing. A door (a live database connection) does things. We keep the
+  book and we have removed the door.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

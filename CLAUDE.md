@@ -107,20 +107,21 @@ about to do, wait. Do not be helpful and proceed.
   RLS returned nothing — not because the page stopped them. Adding a redirect
   later is fine as UX, but it changes nothing about who can read what, so
   don't add one and consider the problem solved.
-- **The Supabase MCP is temporary and gets removed before this goes live.**
-  It is here to verify that RLS policies actually deny, while the only rows
-  are fake ones we wrote. It carries `database` access, which means arbitrary
-  SQL. **The connection comes out before the app is reachable by anyone
-  outside Alex and his mum — at the latest Nov 6.** Read-only is the
-  fallback, not the plan. Added 2026-10-13.
+- **The Supabase MCP is gone.** `.mcp.json` was removed on 2026-10-16
+  (fork issue #17), before the demo site was shown to anyone. It had carried
+  `database` access, which means arbitrary SQL. Policies are verified by the
+  pgTAP tests in `supabase/tests/` instead, and nothing an agent runs holds
+  a database connection. Do not add it back. Added 2026-10-13; closed
+  2026-10-16.
 
 ### Agent tooling: what is a door and what is a book
 
-Two things arrived on 2026-10-13 and they are **not** the same kind of thing.
+Two things arrived on 2026-10-13 and they are **not** the same kind of thing. One has since left.
 
-- **`.mcp.json` is a door.** A live connection that can run arbitrary SQL
-  against the database. This is what "no agents server-side" means: that
-  file is deleted before launch. One 4K file, and it is the whole risk.
+- **`.mcp.json` was a door.** A live connection that could run arbitrary
+  SQL against the database. It was deleted on 2026-10-16, before launch,
+  which is what "no agents server-side" means. `supabase test db` is how
+  policies are checked now.
 - **`.agents/skills/` is a book.** Static markdown, symlinked from
   `.claude/skills/`. It has access to nothing and no security dimension. It
   can stay indefinitely.
