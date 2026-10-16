@@ -253,6 +253,25 @@ own words, you understand the slice.
   to it; RLS on the new project is what protects the data, exactly as
   before.
 
+### 17. The demo site is live — issue #18
+
+- https://dev.sub-for-santa.pages.dev, deployed by Deploy dev from `dev`:
+  migrations first, then the upload. It runs on `sub-for-santa-dev`, a
+  Supabase project in David's own org, because the original dev project
+  belonged to Alex's account and nobody else could set its secrets.
+- Verified over HTTP: the CSP names the new project; the public views
+  answer the publishable key; every private table returns nothing to the
+  anonymous key, which is RLS doing on the hosted project exactly what the
+  pgTAP files prove locally.
+- Cloudflare serves clean URLs: `/queue.html` answers with a redirect to
+  `/queue`, query string kept. Links keep the `.html` so the local server
+  still works; `public/paths.js` compares pages without it.
+- The hosted project starts empty. The three fake households were seeded
+  by hand in the dev SQL editor (dev is not prod; fake rows are fine there).
+- **Say it back:** the same migrations, the same policies, the same tests
+  — on a laptop in Docker and on the hosted project. The deploy applies
+  nothing a developer has not already run locally.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close
