@@ -24,6 +24,6 @@
 # nosniff: the browser must trust our Content-Type, not guess.
 # no-referrer: never tell another site which page someone came from.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://gxgfzafrxulzltikdkca.supabase.co; img-src 'self' data:; style-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://wiobafdpmzzrzzqavjbf.supabase.co; img-src 'self' data:; style-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer

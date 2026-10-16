@@ -239,6 +239,20 @@ own words, you understand the slice.
 - **Say it back:** a spreadsheet is a program. Text that a stranger typed
   must reach it as text, the same way it reaches the browser as text.
 
+### 16. A new dev Supabase project — issue #18 groundwork
+
+- The old dev project belonged to Alex's Supabase account, which blocked
+  the demo site. David created `sub-for-santa-dev` in his own org. Four
+  files name the project: `public/config.js` (URL and publishable key),
+  `public/_headers` (the CSP host), `tests/pages.test.js` (the allowed
+  host), `docs/environments.md`. The GitHub variable was changed by the
+  setup session. Nothing else moves.
+- **Say it back:** the browser only ever knows a project by its URL and
+  its publishable key, both public by design. Swapping projects is
+  changing those two strings and the CSP host that lets the browser talk
+  to it; RLS on the new project is what protects the data, exactly as
+  before.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

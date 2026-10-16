@@ -7,7 +7,7 @@ Three environments, three databases, and a different way into each.
 |---|---|---|---|
 | Git | any branch | `dev` | `main` |
 | Site | `http://localhost:3000` from `node server.js` | `https://dev.<pages-project>.pages.dev` | `https://<pages-project>.pages.dev` |
-| Database | Supabase CLI in Docker | Supabase project `gxgfzafrxulzltikdkca` | a **separate** Supabase project in its own organization, created by a human |
+| Database | Supabase CLI in Docker | Supabase project `wiobafdpmzzrzzqavjbf` | a **separate** Supabase project in its own organization, created by a human |
 | Data | `seed.sql` — three fake households | the same three fake households | real. Never seeded. |
 | Sign-in | emailed link → Mailpit; Google if configured | Google | Google |
 | Deployed by | you, with `npm run dev` | GitHub Actions on every push to `dev` | GitHub Actions on every push to `main`, after a named reviewer approves |
@@ -56,7 +56,7 @@ Everything below is done once. Tick each box in the PR that lands it.
       Account Resources: the one account. Nothing else. Copy it once; it is
       shown once.
 
-### 2. Supabase (existing dev project `gxgfzafrxulzltikdkca`) — *Human*
+### 2. Supabase (dev project `wiobafdpmzzrzzqavjbf`, "sub-for-santa-dev", in David's org) — *Human*
 
 - [ ] Personal access token: supabase.com → Account → Access Tokens →
       Generate new token → name it `github-actions-dev`.
@@ -82,7 +82,7 @@ Dev gets its own client so its test-user list stays apart from prod's.
 - [ ] **Authorized JavaScript origins:**
       `https://dev.<pages-project>.pages.dev` and `http://localhost:3000`.
 - [ ] **Authorized redirect URI:**
-      `https://gxgfzafrxulzltikdkca.supabase.co/auth/v1/callback`
+      `https://wiobafdpmzzrzzqavjbf.supabase.co/auth/v1/callback`
 - [ ] Copy the client ID and secret into Supabase → Authentication →
       Providers → Google (step 2).
 - [ ] While the consent screen is in *Testing*, add the admin's Google
@@ -105,7 +105,7 @@ Dev gets its own client so its test-user list stays apart from prod's.
 
   | Variable | Value |
   |---|---|
-  | `SUPABASE_PROJECT_REF` | `gxgfzafrxulzltikdkca` |
+  | `SUPABASE_PROJECT_REF` | `wiobafdpmzzrzzqavjbf` |
   | `CLOUDFLARE_PAGES_PROJECT` | `sub-for-santa` (or whatever step 1 ended up as) |
   | `SITE_URL` | `https://dev.<pages-project>.pages.dev` — shown on the deployment in GitHub |
 
@@ -122,9 +122,12 @@ Dev gets its own client so its test-user list stays apart from prod's.
 - [ ] Open `https://dev.<pages-project>.pages.dev`. The page loads with no
       console errors, and **no "Email me a sign-in link" form** — only
       Google.
-- [ ] Sign in with Google. The queue at `/queue.html` shows the three fake
-      households (the admin `profiles` row already exists on this project
-      for the admin's account; `supabase/README.md` covers adding one).
+- [ ] Sign in with Google once, then add the admin `profiles` row for that
+      account (`supabase/README.md`). This project started empty: the
+      first Deploy dev applied the migrations and nothing else. To see the
+      three fake households on the demo site, run `supabase/seed.sql` by
+      hand in the dev project's SQL editor (dev is not prod; fake rows are
+      fine here). Then `/dashboard.html` shows them.
 - [ ] Open a PR into `dev` from a branch in this repo. *PR preview* deploys
       `https://pr-<n>.<pages-project>.pages.dev`, and signing in there works
       because of the wildcard redirect URL.
