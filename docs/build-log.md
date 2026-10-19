@@ -303,6 +303,20 @@ own words, you understand the slice.
   admin?" but "can the last admin be removed, and can an invite be forged?"
   The database answers both: no, and only an admin can write an invite.
 
+### 20. The bootstrap admin is part of the platform — issue #66
+
+- David ruled out the hand-run break-glass statement for the first admin.
+  A migration now seeds an invite for the bootstrap address; the existing
+  invite trigger promotes it on first sign-in. On a database where the
+  account already exists (dev), the migration promotes it directly.
+- "First person to sign in becomes admin" was rejected again, for the
+  same reason as before: open sign-up makes it a race. An invite bound to
+  one address has nothing to race. Break-glass is now the fallback for a
+  mistyped or lost bootstrap address.
+- **Say it back:** the platform knows one email in advance. That email's
+  first sign-in is the only thing that can create the first admin; every
+  admin after that is created by an admin.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close
