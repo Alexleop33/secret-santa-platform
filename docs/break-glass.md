@@ -71,22 +71,29 @@ member — that, too, gets a line in `decisions.md`.
 6. If the same thing is needed twice, it isn't an emergency any more. Write
    the migration, or the feature.
 
-## The first use: the admin's row
+## The first admin no longer needs this
 
-After the first prod deploy, the admin signs in once with Google on the live
-site. That creates her `auth.users` row and nothing else — she can see no
-households, because she isn't the admin yet. Then the org's one member
-(David for now) runs, in the prod SQL editor:
+Decided 2026-10-19: the bootstrap admin is part of the platform. Migration
+`20261019000000_bootstrap_admin.sql` seeds an invite for the bootstrap
+address; the first time that address signs in with Google, the invite
+trigger promotes it, and every further admin is added from the Admins page.
+There is nothing to run by hand.
+
+Break-glass is now for when that goes wrong: the bootstrap address was
+mistyped, or the account that holds it is lost. Then the org's one member
+runs, in the prod SQL editor:
 
 ```sql
 insert into profiles (id, role)
 select id, 'admin'
 from auth.users
-where email = 'REPLACE_WITH_THE_ADMIN_EMAIL';
+where email = 'REPLACE_WITH_THE_ADMIN_EMAIL'
+on conflict (id) do update set role = 'admin';
 ```
 
-and records it in `decisions.md` as above. From then on she sees the queue.
+and records it in `decisions.md` as above.
 
 *Rejected alternative:* a "first person to sign in becomes admin" function.
 Sign-up is open — it has to be, for Google sign-in to work — so that would be
-a race between the admin and whoever else finds the URL first.
+a race between the admin and whoever else finds the URL first. An invite
+bound to one address has no race, which is why the bootstrap is an invite.

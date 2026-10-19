@@ -142,7 +142,7 @@ Everything hangs off `campaigns` — no `organizations` table above it.
 | `referral_links` | SHA-256 of the token, expiry, used-at, which household it became | the admin |
 | `claims` | household, donor (or an offline label), status, timestamps | the admin through `claims_with_sponsor`; a donor's own through `my_claims` |
 | `profiles` | role: `admin` or `donor` | each account reads its own row; admins add and remove admins through functions, never the last one |
-| `admin_invites` | lower-cased email, who invited, used-at | the admin; a pending invite promotes the matching account on its first sign-in |
+| `admin_invites` | lower-cased email, who invited, used-at | the admin; a pending invite promotes the matching account on its first sign-in. The first admin is seeded this way by a migration, so no SQL is ever run by hand |
 | `activity` | every status change, by role and account id, against a ref code | the admin |
 
 ## Deadlines

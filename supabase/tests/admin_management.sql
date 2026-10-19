@@ -10,6 +10,7 @@ select plan(19);
 -- Inside this transaction they are removed, so "the last admin" means the
 -- test's own. Rolled back at the end like everything else.
 delete from profiles where role = 'admin';
+delete from admin_invites;
 
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-000000000001', 'admin@example.test'),
