@@ -107,20 +107,21 @@ about to do, wait. Do not be helpful and proceed.
   RLS returned nothing — not because the page stopped them. Adding a redirect
   later is fine as UX, but it changes nothing about who can read what, so
   don't add one and consider the problem solved.
-- **The Supabase MCP is temporary and gets removed before this goes live.**
-  It is here to verify that RLS policies actually deny, while the only rows
-  are fake ones we wrote. It carries `database` access, which means arbitrary
-  SQL. **The connection comes out before the app is reachable by anyone
-  outside Alex and his mum — at the latest Nov 6.** Read-only is the
-  fallback, not the plan. Added 2026-10-13.
+- **The Supabase MCP is gone.** `.mcp.json` was removed on 2026-10-16
+  (fork issue #17), before the demo site was shown to anyone. It had carried
+  `database` access, which means arbitrary SQL. Policies are verified by the
+  pgTAP tests in `supabase/tests/` instead, and nothing an agent runs holds
+  a database connection. Do not add it back. Added 2026-10-13; closed
+  2026-10-16.
 
 ### Agent tooling: what is a door and what is a book
 
-Two things arrived on 2026-10-13 and they are **not** the same kind of thing.
+Two things arrived on 2026-10-13 and they are **not** the same kind of thing. One has since left.
 
-- **`.mcp.json` is a door.** A live connection that can run arbitrary SQL
-  against the database. This is what "no agents server-side" means: that
-  file is deleted before launch. One 4K file, and it is the whole risk.
+- **`.mcp.json` was a door.** A live connection that could run arbitrary
+  SQL against the database. It was deleted on 2026-10-16, before launch,
+  which is what "no agents server-side" means. `supabase test db` is how
+  policies are checked now.
 - **`.agents/skills/` is a book.** Static markdown, symlinked from
   `.claude/skills/`. It has access to nothing and no security dimension. It
   can stay indefinitely.
@@ -140,6 +141,15 @@ data types.
 
 **Where a skill and this file disagree, this file wins.** 188K of vendored
 guidance does not outvote one deliberate decision.
+
+## Hard rule: nobody touches prod by hand
+
+The live Supabase project is changed by one path: a migration merged into
+`dev`, then into `main`, then a deploy a named reviewer approved. No MCP, no
+`supabase link`, no agent, no SQL editor. The exception is the written
+emergency procedure in `docs/break-glass.md`, and every use of it is a dated
+line in the product repo's `decisions.md`. The first use is expected: the
+admin's `profiles` row. Added 2026-10-15.
 
 ## The app must never be the single point of failure
 
@@ -176,27 +186,26 @@ it as load-bearing, not as a report.
   parts is easier to read and easier to trust. But a well-chosen package
   beats hand-rolling the same thing badly. Adding one is a judgement call to
   make out loud in the Epic, not a detail to slip in.
-- **Deployment: undecided.** There is nothing to deploy yet, and specifying
-  deployment before a page renders is a mistake this project already made
-  once. Don't propose a host until something runs.
+- **Deployment: Cloudflare Pages, uploaded by GitHub Actions.** Decided
+  2026-10-15 in the Environments Epic, once a page rendered. `dev` deploys
+  to the demo site on the sandbox Supabase project; `main` deploys to the
+  live site on a separate project, behind a required approval. The
+  database is migrated first, the site uploaded second, in one workflow.
+  Cloudflare's Git integration stays off for that reason. Every console
+  step is a human checklist in `docs/environments.md`; agents never hold
+  a hosted credential.
 
 Assume JavaScript is familiar — Alex has built a React PWA, so the language is
 known even though the framework is gone. **Do not assume depth in SQL, backend
 architecture, or RLS** — explain those.
 
-## Data model sketch
+## Data model
 
 Everything hangs off `campaigns`. Resist adding an `organizations` table.
-
-| Table | Columns |
-|---|---|
-| `campaigns` | name, year, the three dates, status |
-| `households` | campaign_id, ref_code (`#14`), story text, status |
-| `household_members` | household_id, age, gender, notes — **no names** |
-| `wish_items` | household_id, label |
-| `claims` | household_id, donor_id, status, claimed_at, released_at |
-| `users` | email, role (caseworker / coordinator) |
-| `activity` | campaign_id, actor, action, target, timestamp |
+The tables as built, who reads each one and through which view, are in the
+README's "Data model" section; the migrations in `supabase/migrations/`
+are the source of truth and every one is covered by a pgTAP file in
+`supabase/tests/`.
 
 ## Scope for v1
 
@@ -221,16 +230,35 @@ claiming doesn't open until after Nov 6, so it can land two weeks later.
 
 ## The design reference
 
-The prototype is a single 1,207-line HTML file built by Alex's mom:
-`https://claude.ai/code/artifact/2a8412ec-789a-4233-833d-f666df71903d`
+`docs/handbook/` is the design reference: a journey map, seven personas and
+21 annotated mockups (D1–D10 donor, J1 co-sponsor, C1–C4 referral,
+A1–A6 coordinator), each with a "gaps and open questions" box. Start at
+[docs/handbook/README.md](docs/handbook/README.md). It was captured from the
+prototype Alex's mom built; the prototype itself is no longer reachable.
 
 **It is the design reference, not the codebase.** Don't port it. Read it for
 what the screens should feel like, then build the real thing.
 
-One thing it demonstrates that **cannot be built**: claim a household, unlock
-their name and phone. No PII means delivery handoff moves offline — donors buy
-against the household code and drop gifts at a central location. The app will
-never tell anyone where to drive.
+**Where the mockups and the hard rules disagree, the rules win.** The
+handbook draws these, and none of them get built:
+
+- **Family contact unlocked on claim** (D5, D6, D7, A2 "reveal for review",
+  C1 section 4, A5's locked toggle). No PII means delivery moves offline —
+  donors buy against the household code and drop gifts at a central
+  location. The app will never tell anyone where to drive.
+- **Photos** (C1, A4, D9). Never.
+- **A Stripe link** (D3's gap note). No payments, ever.
+- **Co-sponsor J1** and the **thank-you relay A4/D7**: on the v1 defer list.
+- **Provider accounts** (C1–C4 "My referral"): providers are not users; the
+  admin creates referral links and the family fills the form (decided
+  2026-10-13).
+- **"Request changes" and C3**: a family cannot edit after submitting, so
+  there is no recipient. A still-in-work placeholder stands in its place.
+- **Viewer flags** (D3 → A3): skipped for v1.
+
+The palette and type come from the mockups: cream ground, deep green
+coordinator console, cranberry donor action, amber for anything pending,
+Manrope headings over IBM Plex Sans. Light theme only.
 
 ## Working with Alex
 

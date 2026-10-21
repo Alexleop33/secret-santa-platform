@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sub for Santa — Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="console">
+      <nav class="console-nav" aria-label="Coordinator console">
+        <a class="brand" href="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          <span><span class="name">Sub for Santa</span><span class="sub">Coordinator console</span></span>
+        </a>
+        <ul id="console-pages"></ul>
+      </nav>
+
+      <div class="console-main">
+        <header class="topbar">
+          <h1 id="page-title">Dashboard</h1>
+          <span class="spacer"></span>
+          <span class="pill pill-grey hidden" id="env-pill"></span>
+          <span class="small muted" id="whoami"></span>
+          <a class="btn btn-outline btn-sm" href="/">Home</a>
+        </header>
+
+        <main class="console-content stack" id="dashboard-root">
+          <div class="tiles" id="tiles"></div>
+
+          <section class="card" id="progress-card">
+            <div class="pick-top"><span id="progress-label">—</span><span class="muted" id="progress-percent"></span></div>
+            <div class="progress"><span id="progress-bar"></span></div>
+            <p class="muted small" id="deadlines"></p>
+          </section>
+
+          <section class="notice notice-amber hidden" id="attention"></section>
+
+          <section class="card">
+            <div class="pick-top">
+              <h2>Roster</h2>
+              <button type="button" class="btn btn-outline btn-sm" id="export">Export roster (CSV)</button>
+            </div>
+            <p class="muted small">Every household and every pending referral in one table. The export is the same table as a file, and it never includes contact details.</p>
+            <div id="roster"><p class="muted">Loading…</p></div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="/env.js"></script>
+    <script type="module" src="dashboard.js"></script>
+  </body>
+</html>
