@@ -26,24 +26,24 @@ async function render() {
   const session = data.session;
 
   nav.innerHTML = "";
-  nav.appendChild(link("/browse.html", "Browse families"));
+  nav.appendChild(link("/browse.html", "Browse Families"));
 
   if (!session) {
-    nav.appendChild(link("/signin.html", "Sign in"));
+    nav.appendChild(link("/signin.html", "Sign In"));
     return;
   }
 
   // The admin's own profile row is readable by the admin only.
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
   if (profile?.role === "admin") {
-    nav.appendChild(link("/dashboard.html", "Coordinator console"));
+    nav.appendChild(link("/dashboard.html", "Coordinator Console"));
   } else {
-    nav.appendChild(link("/mine.html", "My families"));
+    nav.appendChild(link("/mine.html", "My Families"));
   }
 
   const signOut = document.createElement("a");
   signOut.href = "#";
-  signOut.textContent = "Sign out";
+  signOut.textContent = "Sign Out";
   signOut.onclick = async (event) => {
     event.preventDefault();
     await supabase.auth.signOut();
