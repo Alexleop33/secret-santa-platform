@@ -139,11 +139,26 @@ function addMember() {
     });
   }
 
+  for (const name of ["clothing_size", "shoe_size"]) {
+    const input = block.querySelector(`[name="${name}"]`);
+    const count = block.querySelector(`[data-count-for="${name}"]`);
+    input.addEventListener("input", () => {
+      count.textContent = `${input.value.length}/80`;
+    });
+  }
+
   block.querySelector(".remove-member").onclick = () => {
     if (membersRoot.children.length > 1) block.remove();
   };
 
   membersRoot.appendChild(block);
+}
+
+// The size fields are a two-line textarea so a long entry stays visible
+// while typing, but the stored value is one line — a literal line break
+// from pressing Enter is folded into a space before it's saved.
+function oneLine(text) {
+  return text.trim().replace(/\s*\n+\s*/g, " ");
 }
 
 function readMembers() {
@@ -152,8 +167,8 @@ function readMembers() {
     return {
       role: value("role"),
       age: CHILD_ROLES.has(value("role")) ? Number(value("age")) : null,
-      clothing_size: value("clothing_size"),
-      shoe_size: value("shoe_size"),
+      clothing_size: oneLine(value("clothing_size")),
+      shoe_size: oneLine(value("shoe_size")),
       needs: value("needs"),
       would_love: value("would_love"),
     };

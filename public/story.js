@@ -27,6 +27,17 @@ function el(tag, className, text) {
   return node;
 }
 
+// Decorative only, per the Christmas-theme doc: empty alt, never inside the
+// story box or a member card, originals drawn for this page (no stock art,
+// no real photos).
+function img(file, className) {
+  const node = document.createElement("img");
+  node.src = `/assets/${file}`;
+  node.alt = "";
+  node.className = className;
+  return node;
+}
+
 function personLabel(member) {
   const base = ROLE_LABELS[member.role] ?? member.role;
   return CHILD_ROLES.has(member.role) && member.age != null ? `${base}, ${member.age}` : base;
@@ -35,7 +46,7 @@ function personLabel(member) {
 function renderPerson(member) {
   const card = el("div", "person");
   const heading = el("h3");
-  heading.append(el("span", null, personLabel(member)));
+  heading.append(el("span", "person-label", personLabel(member)));
   const sizes = el("span", "sizes");
   if (member.clothing_size) sizes.appendChild(el("span", "size", member.clothing_size));
   if (member.shoe_size) sizes.appendChild(el("span", "size", member.shoe_size));
@@ -46,12 +57,12 @@ function renderPerson(member) {
   const loves = own.filter((i) => i.kind === "would_love").map((i) => i.label);
   if (needs.length) {
     const line = el("p");
-    line.append(el("b", null, "Needs "), document.createTextNode(needs.join(", ")));
+    line.append(el("b", null, "Needs: "), document.createTextNode(needs.join(", ")));
     card.appendChild(line);
   }
   if (loves.length) {
     const line = el("p");
-    line.append(el("b", null, "Would love "), document.createTextNode(loves.join(", ")));
+    line.append(el("b", null, "Would love: "), document.createTextNode(loves.join(", ")));
     card.appendChild(line);
   }
   return card;
@@ -79,14 +90,18 @@ function renderStory() {
     el("span", "pill pill-live", "Needs a sponsor"),
     el("span", "muted small", ` Family ${household.ref_code} · referred ${formatDate(household.referred_on.slice(0, 10))}${campaign ? ` through ${campaign.organization_name}` : ""}`),
   );
-  main.append(status, el("h1", null, household.summary));
+  const titleRow = el("div", "title-row");
+  titleRow.append(el("h1", null, household.summary), img("tree.svg", "title-tree"));
+  main.append(status, titleRow);
   if (household.story) {
     main.appendChild(el("div", "story-box", household.story));
   } else {
     main.appendChild(el("p", "notice", "The family chose to keep their story private. The coordinator has read it."));
   }
   const needsHead = el("div", "pick-top");
-  needsHead.append(el("h2", null, "What this household needs"), el("span", "muted small", `${items.length} item${items.length === 1 ? "" : "s"} across ${members.length} ${members.length === 1 ? "person" : "people"}`));
+  const needsHeading = el("h2", null, "What This Household Needs ");
+  needsHeading.appendChild(img("gift-small.svg", "gift-icon"));
+  needsHead.append(needsHeading, el("span", "muted small", `${items.length} item${items.length === 1 ? "" : "s"} across ${members.length} ${members.length === 1 ? "person" : "people"}`));
   main.appendChild(needsHead);
   const people = el("div", "people");
   for (const member of members) people.appendChild(renderPerson(member));
@@ -94,31 +109,34 @@ function renderStory() {
 
   const side = el("div", "stack");
   side.appendChild(renderSponsorPanel());
-  const notSure = el("div", "card card-tinted small");
-  notSure.append(
-    el("p", null, "Not sure yet? Families stay listed until someone claims them."),
-    el("p", "muted", campaign ? `Questions go to ${campaign.coordinator_name} · ${campaign.contact_phone}.` : ""),
-  );
-  side.appendChild(notSure);
+  if (campaign) {
+    const closing = el("p");
+    closing.append(
+      el("b", null, "QUESTIONS?"),
+      document.createTextNode(` Contact ${campaign.coordinator_name} - ${campaign.contact_phone}. Thank you for your support!`),
+      img("tree.svg", "thank-you-tree"),
+    );
+    side.appendChild(closing);
+  }
 
   root.append(main, side);
 }
 
 function renderSponsorPanel() {
-  const card = el("div", "card");
-  card.appendChild(el("h2", null, "Sponsor this family"));
+  const card = el("div", "card card-feature");
+  card.appendChild(img("gifts-row.svg", "card-feature-banner"));
+  card.appendChild(el("h2", null, "Sponsor This Family"));
   const steps = el("ol", "sponsor-steps");
   steps.append(
     el("li", null, "Drop-off details come with your confirmation."),
-    el("li", null, "Buy what you can from the wish list — you don't have to cover everything."),
-    el("li", null, campaign ? `Drop the gifts off unwrapped by ${formatDate(campaign.gifts_due)}.` : "Drop the gifts off unwrapped by the deadline."),
+    el("li", null, "Buy the items on the wish list."),
+    el("li", null, campaign ? `Deliver the gifts UNWRAPPED to ${campaign.organization_name} by ${formatDate(campaign.gifts_due)}. (Pickup can be arranged.)` : "Deliver the gifts UNWRAPPED by the deadline. (Pickup can be arranged.)"),
   );
   card.appendChild(steps);
-  const button = el("button", "btn btn-primary btn-block", "Sponsor this family");
+  const button = el("button", "btn btn-primary btn-block", "Sponsor This Family");
   button.type = "button";
   button.onclick = startClaim;
   card.appendChild(button);
-  card.appendChild(el("p", "muted small", "No names, phone numbers or addresses appear on this page, or anywhere on this site. Gifts go to a central drop-off; the coordinator sorts them by household."));
   return card;
 }
 

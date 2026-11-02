@@ -27,7 +27,7 @@
           <h2><span class="muted">1</span> About the household</h2>
           <label class="field">
             <span>One line that describes the household</span>
-            <input type="text" name="summary" maxlength="120" required placeholder="e.g. Household of 4 — mom & three kids, ages 3–9" />
+            <input type="text" name="summary" maxlength="120" required placeholder="e.g. Household of 5: Mother of 4 Boys, Ages 9, 6, 4, and 3" />
             <span class="hint">No names. Donors see this line first.</span>
           </label>
           <div class="notice notice-amber small hidden" data-warning-for="summary"></div>
@@ -139,8 +139,16 @@
           </label>
         </div>
         <div class="form-row">
-          <label class="field"><span>Clothing size</span><input type="text" name="clothing_size" maxlength="40" placeholder="e.g. Shirt 8, or Women's M" /></label>
-          <label class="field"><span>Shoe size</span><input type="text" name="shoe_size" maxlength="40" placeholder="e.g. Size 1" /></label>
+          <label class="field">
+            <span>Clothing size</span>
+            <textarea name="clothing_size" maxlength="80" rows="2" class="textarea-compact" placeholder="e.g. Shirt 8, or Women's M"></textarea>
+            <span class="char-count" data-count-for="clothing_size">0/80</span>
+          </label>
+          <label class="field">
+            <span>Shoe size</span>
+            <textarea name="shoe_size" maxlength="80" rows="2" class="textarea-compact" placeholder="e.g. Size 1"></textarea>
+            <span class="char-count" data-count-for="shoe_size">0/80</span>
+          </label>
         </div>
         <div class="form-row">
           <label class="field"><span>Needs</span><input type="text" name="needs" maxlength="200" placeholder="Winter coat, jeans" /><span class="hint">Separate items with commas.</span></label>

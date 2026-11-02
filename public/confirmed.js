@@ -5,6 +5,14 @@
 import { supabase } from "./auth.js";
 import { formatDate } from "./console.js";
 
+function img(file, className) {
+  const node = document.createElement("img");
+  node.src = `/assets/${file}`;
+  node.alt = "";
+  node.className = className;
+  return node;
+}
+
 const root = document.getElementById("confirmed");
 const claimId = new URLSearchParams(window.location.search).get("c") || "";
 
@@ -60,12 +68,20 @@ async function start() {
 
   root.innerHTML = "";
   const head = el("div", "confirmed-head");
-  head.append(el("div", "confirmed-mark", "✓"), el("h1", null, `You're sponsoring Family ${claim.ref_code}`), el("p", "muted", `${claim.summary}. This family is off the public list now — it's yours.`));
+  const gifts = el("div", "confirmed-gifts");
+  gifts.append(img("gift-small.svg", "confirmed-gift"), img("gift-small.svg", "confirmed-gift"), img("gift-small.svg", "confirmed-gift"));
+  head.append(
+    el("div", "confirmed-mark", "✓"),
+    el("h1", null, `You're Sponsoring Family ${claim.ref_code}`),
+    el("p", "muted", `${claim.summary}. This family is off the public list now — it's yours.`),
+    el("p", "confirmed-thanks", "Thank you for making Holiday dreams come true!"),
+    gifts,
+  );
   root.appendChild(head);
 
   const cols = el("div", "two-col");
   const dropCard = el("div", "card");
-  dropCard.appendChild(el("p", "eyebrow", "Drop off the gifts"));
+  dropCard.appendChild(el("p", "eyebrow eyebrow-xmas", "Drop off the gifts"));
   const facts = el("ul", "row-list");
   const fact = (label, value) => {
     const li = el("li");
@@ -82,18 +98,22 @@ async function start() {
   if (drop) dropCard.appendChild(el("p", "muted small", `Questions: ${drop.coordinator_name} · ${drop.contact_phone} · ${drop.contact_email}`));
 
   const listCard = el("div", "card");
-  listCard.appendChild(el("p", "eyebrow", "What to buy"));
+  listCard.appendChild(el("p", "eyebrow eyebrow-xmas", "What to buy"));
   const people = el("div", "stack");
   for (const m of members ?? []) {
     const own = (items ?? []).filter((i) => i.member_id === m.id);
     const block = el("div");
     const h = el("h3");
-    h.append(el("span", null, personLabel(m)), el("span", "sizes"));
+    h.append(el("span", "person-label", personLabel(m)), el("span", "sizes"));
     if (m.clothing_size) h.lastChild.appendChild(el("span", "size", m.clothing_size));
     if (m.shoe_size) h.lastChild.appendChild(el("span", "size", m.shoe_size));
     block.appendChild(h);
     const ul = el("ul", "plain-list");
-    for (const i of own) ul.appendChild(el("li", null, `${i.kind === "need" ? "Needs" : "Would love"}: ${i.label}`));
+    for (const i of own) {
+      const li = el("li");
+      li.append(el("b", null, i.kind === "need" ? "Needs:" : "Would love:"), document.createTextNode(` ${i.label}`));
+      ul.appendChild(li);
+    }
     block.appendChild(ul);
     people.appendChild(block);
   }
@@ -102,9 +122,9 @@ async function start() {
   root.appendChild(cols);
 
   const actions = el("div", "form-actions");
-  const mine = el("a", "btn btn-green", "Go to my families");
+  const mine = el("a", "btn btn-green", "Go to My Families");
   mine.href = "/mine.html";
-  const print = el("button", "btn btn-outline", "Print the wish list");
+  const print = el("button", "btn btn-outline", "Print the Wish List");
   print.type = "button";
   print.onclick = () => window.print();
   actions.append(mine, print);
