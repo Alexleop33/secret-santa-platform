@@ -25,6 +25,14 @@ function el(tag, className, text) {
   return node;
 }
 
+function img(file, className) {
+  const node = document.createElement("img");
+  node.src = `/assets/${file}`;
+  node.alt = "";
+  node.className = className;
+  return node;
+}
+
 function passesFilters(h) {
   const size = h.members.length;
   const sizeWanted = filterSize.value;
@@ -57,7 +65,8 @@ function render() {
 
   for (const h of shown) {
     const row = el("article", "family-row");
-    const icon = el("div", "family-icon", "⌂");
+    const icon = el("div", "family-icon");
+    icon.appendChild(img("gift-small.svg", ""));
     const body = el("div", "family-body");
     const title = el("h2");
     title.append(el("span", null, h.summary), el("span", "muted small family-ref", ` Family ${h.ref_code}`));
@@ -68,7 +77,7 @@ function render() {
     if (h.items.length > 3) tags.appendChild(el("span", "muted small", `+${h.items.length - 3} more`));
     body.appendChild(tags);
     const actions = el("div", "family-actions");
-    const view = el("a", "family-view", "View story →");
+    const view = el("a", "family-view", "View Story →");
     view.href = `/story.html?h=${encodeURIComponent(h.id)}`;
     const sponsor = el("a", "btn btn-primary", "Sponsor");
     sponsor.href = `/story.html?h=${encodeURIComponent(h.id)}`;

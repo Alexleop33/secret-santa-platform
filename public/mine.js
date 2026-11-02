@@ -25,6 +25,14 @@ function el(tag, className, text) {
   return node;
 }
 
+function img(file, className) {
+  const node = document.createElement("img");
+  node.src = `/assets/${file}`;
+  node.alt = "";
+  node.className = className;
+  return node;
+}
+
 function personLabel(m) {
   const base = ROLE_LABELS[m.role] ?? m.role;
   return CHILD_ROLES.has(m.role) && m.age != null ? `${base}, ${m.age}` : base;
@@ -46,16 +54,18 @@ function renderClaim(claim) {
 
   const head = el("div", "pick-top");
   const title = el("div");
-  title.append(el("h2", null, claim.summary), el("p", "muted small", `Family ${claim.ref_code} · claimed ${formatDate(claim.claimed_at.slice(0, 10))}`));
+  const titleHead = el("div", "claim-title-head");
+  titleHead.append(img("gift-small.svg", "gift-icon"), el("h2", null, claim.summary));
+  title.append(titleHead, el("p", "muted small", `Family ${claim.ref_code} · claimed ${formatDate(claim.claimed_at.slice(0, 10))}`));
   const pills = el("div", "tags");
-  pills.appendChild(el("span", delivered ? "pill pill-delivered" : "pill pill-sponsored", delivered ? "Gifts delivered" : "Sponsored"));
+  pills.appendChild(el("span", delivered ? "pill pill-delivered" : "pill pill-sponsored pill-xmas", delivered ? "Gifts delivered" : "Sponsored"));
   head.append(title, pills);
   card.appendChild(head);
 
   const cols = el("div", "two-col");
 
   const left = el("div");
-  left.appendChild(el("p", "eyebrow", "Drop-off"));
+  left.appendChild(el("p", "eyebrow eyebrow-xmas", "Drop-off"));
   const facts = el("ul", "row-list");
   const fact = (label, value) => {
     const li = el("li");
@@ -75,12 +85,22 @@ function renderClaim(claim) {
   left.append(progress, el("p", "muted small", `${bought} of ${own.length} items bought`));
 
   const right = el("div");
-  right.appendChild(el("p", "eyebrow", "Wish list"));
-  const checklist = el("ul", "checklist");
+  right.appendChild(el("p", "eyebrow eyebrow-xmas", "Wish list and sizes"));
+  const groups = el("div", "stack");
   for (const m of members.filter((x) => x.household_id === claim.household_id)) {
+    const group = el("div", "claim-member");
+    const groupHead = el("div", "claim-member-head");
+    const label = el("span", "person-label", personLabel(m));
+    const sizes = el("span", "sizes");
+    if (m.clothing_size) sizes.appendChild(el("span", "size", m.clothing_size));
+    if (m.shoe_size) sizes.appendChild(el("span", "size", m.shoe_size));
+    groupHead.append(label, sizes);
+    group.appendChild(groupHead);
+
+    const checklist = el("ul", "checklist");
     for (const i of own.filter((x) => x.member_id === m.id)) {
       const li = el("li", i.bought_at ? "done" : "");
-      const label = el("label", "check");
+      const itemLabel = el("label", "check");
       const box = document.createElement("input");
       box.type = "checkbox";
       box.checked = Boolean(i.bought_at);
@@ -94,12 +114,14 @@ function renderClaim(claim) {
         }
         await load();
       };
-      label.append(box, el("span", null, `${personLabel(m)} — ${i.label}`));
-      li.appendChild(label);
+      itemLabel.append(box, el("span", null, i.label));
+      li.appendChild(itemLabel);
       checklist.appendChild(li);
     }
+    group.appendChild(checklist);
+    groups.appendChild(group);
   }
-  right.appendChild(checklist);
+  right.appendChild(groups);
   cols.append(left, right);
   card.appendChild(cols);
 
@@ -107,7 +129,7 @@ function renderClaim(claim) {
   if (delivered) {
     actions.appendChild(el("p", "notice notice-green", "Gifts marked delivered — thank you."));
   } else {
-    const deliver = el("button", "btn btn-green", "Mark gifts delivered");
+    const deliver = el("button", "btn btn-green", "Mark Gifts Delivered");
     deliver.type = "button";
     deliver.onclick = async () => {
       deliver.disabled = true;
@@ -115,10 +137,10 @@ function renderClaim(claim) {
       if (error) card.prepend(el("p", "notice notice-red", error.message));
       await load();
     };
-    const print = el("button", "btn btn-outline", "Print the wish list");
+    const print = el("button", "btn btn-outline", "Print the Wish List");
     print.type = "button";
     print.onclick = () => window.print();
-    const release = el("button", "btn btn-danger", "I can no longer sponsor");
+    const release = el("button", "btn btn-danger", "I Can No Longer Sponsor");
     release.type = "button";
     release.onclick = () => renderRelease(card, claim);
     actions.append(deliver, print, el("span", "spacer"), release);
