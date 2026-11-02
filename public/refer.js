@@ -27,7 +27,6 @@ const submitStatus = document.getElementById("submit-status");
 const submitError = document.getElementById("submit-error");
 const contactError = document.getElementById("contact-error");
 const primaryRow = document.getElementById("primary-row");
-const labelRow = document.getElementById("label-row");
 const done = document.getElementById("done");
 
 let campaign = null;
@@ -64,7 +63,6 @@ const BLOCKING = [
   [/\d+\s+[a-z]+\s+(st|street|ave|avenue|rd|road|dr|drive|ln|lane|blvd|ct|court|way|pl|place|cir|circle)\b/i, "a street address"],
 ];
 const SCHOOL = /\b(school|elementary|academy|kindergarten|preschool|high school|middle school)\b/i;
-const LOOKS_LIKE_A_NAME = /^[A-Z][a-z]+(\s+[A-Z]\.?|\s+[A-Z][a-z]+)+$/;
 
 function problemsIn(text) {
   const blocking = BLOCKING.filter(([pattern]) => pattern.test(text)).map(([, label]) => label);
@@ -88,23 +86,6 @@ function updateWarning(target, text) {
   return false;
 }
 
-function updateLabelWarning() {
-  const target = form.querySelector('[data-warning-for="label"]');
-  const value = form.elements.submitter_label.value.trim();
-  const { blocking } = problemsIn(value);
-  if (blocking.length) {
-    target.textContent = `This looks like it contains ${blocking.join(" and ")}. A reference must not identify the household.`;
-    target.classList.remove("hidden");
-    return;
-  }
-  if (LOOKS_LIKE_A_NAME.test(value)) {
-    target.textContent = "This reads like a person's name. Use something only you understand instead — Alpha, Beta, Family 3.";
-    target.classList.remove("hidden");
-    return;
-  }
-  target.classList.add("hidden");
-}
-
 function watchField(input, warningTarget) {
   input.addEventListener("input", () => updateWarning(warningTarget, input.value));
 }
@@ -112,8 +93,6 @@ function watchField(input, warningTarget) {
 // ---------- Contact: who, and how ----------
 
 function syncContact() {
-  const onBehalf = form.elements.contact_is.value === "submitter";
-  labelRow.classList.toggle("hidden", !onBehalf);
   const both = form.elements.email.value.trim() && form.elements.phone.value.trim();
   primaryRow.classList.toggle("hidden", !both);
   contactError.classList.add("hidden");
@@ -160,11 +139,26 @@ function addMember() {
     });
   }
 
+  for (const name of ["clothing_size", "shoe_size"]) {
+    const input = block.querySelector(`[name="${name}"]`);
+    const count = block.querySelector(`[data-count-for="${name}"]`);
+    input.addEventListener("input", () => {
+      count.textContent = `${input.value.length}/80`;
+    });
+  }
+
   block.querySelector(".remove-member").onclick = () => {
     if (membersRoot.children.length > 1) block.remove();
   };
 
   membersRoot.appendChild(block);
+}
+
+// The size fields are a two-line textarea so a long entry stays visible
+// while typing, but the stored value is one line — a literal line break
+// from pressing Enter is folded into a space before it's saved.
+function oneLine(text) {
+  return text.trim().replace(/\s*\n+\s*/g, " ");
 }
 
 function readMembers() {
@@ -173,8 +167,8 @@ function readMembers() {
     return {
       role: value("role"),
       age: CHILD_ROLES.has(value("role")) ? Number(value("age")) : null,
-      clothing_size: value("clothing_size"),
-      shoe_size: value("shoe_size"),
+      clothing_size: oneLine(value("clothing_size")),
+      shoe_size: oneLine(value("shoe_size")),
       needs: value("needs"),
       would_love: value("would_love"),
     };
@@ -184,19 +178,22 @@ function readMembers() {
 // ---------- Submit ----------
 
 function readForm() {
-  const onBehalf = form.elements.contact_is.value === "submitter";
   const email = form.elements.email.value.trim();
   const phone = form.elements.phone.value.trim();
   return {
     summary: form.elements.summary.value.trim(),
     story: form.elements.story.value.trim(),
-    consent_wish_list: form.elements.consent_wish_list.checked,
-    consent_story: form.elements.consent_story.checked,
-    contact_is: onBehalf ? "submitter" : "household",
+    // One agreement covers the wish list and the story (2026-10-22 copy);
+    // the guardian line is its own required attestation.
+    is_guardian: form.elements.is_guardian.checked,
+    consent_wish_list: form.elements.consent_share.checked,
+    consent_story: form.elements.consent_share.checked,
+    first_name: form.elements.first_name.value.trim(),
     email,
     phone,
     primary_channel: email && phone ? form.elements.primary_channel.value : email ? "email" : "phone",
-    submitter_label: onBehalf ? form.elements.submitter_label.value.trim() : "",
+    referral_source: form.elements.referral_source.value.trim(),
+    coordinator_note: form.elements.coordinator_note.value.trim(),
     members: readMembers(),
   };
 }
@@ -227,7 +224,7 @@ form.onsubmit = async (event) => {
     return;
   }
 
-  const texts = [referral.summary, referral.story, referral.submitter_label, ...referral.members.flatMap((m) => [m.needs, m.would_love, m.clothing_size, m.shoe_size])];
+  const texts = [referral.summary, referral.story, referral.coordinator_note, referral.first_name, referral.referral_source, ...referral.members.flatMap((m) => [m.needs, m.would_love, m.clothing_size, m.shoe_size])];
   const blocking = texts.flatMap((text) => problemsIn(text).blocking);
   if (blocking.length) {
     showSubmitError(`Please take out ${[...new Set(blocking)].join(" and ")} before submitting. The coordinator reaches you through step 4.`);
@@ -265,25 +262,14 @@ function showDone(refCode, referral) {
   const heading = document.createElement("h2");
   heading.textContent = `The referral is ${refCode}`;
   const body = document.createElement("p");
-  body.textContent = "The coordinator reviews every referral before it appears to sponsors, usually within a couple of days. Nothing is public yet. Write the number down — it is how the coordinator will refer to this household, and it is the only handle sponsors ever see.";
+  body.textContent = "The coordinator reviews every referral before it appears to donors, usually within a couple of days. Nothing is public yet. Write the number down — it is how the coordinator will refer to this household, and it is the only handle donors ever see.";
   done.append(eyebrow, heading, body);
-  if (referral.submitter_label) {
-    const label = document.createElement("p");
-    label.className = "muted";
-    label.textContent = `Your reference for it: ${referral.submitter_label}.`;
-    done.appendChild(label);
-  }
   const next = document.createElement("p");
   next.className = "muted";
   next.textContent = campaign?.contact_email
     ? `If anything needs changing, email the coordinator at ${campaign.contact_email} and quote ${refCode}.`
     : `If anything needs changing, contact the coordinator and quote ${refCode}.`;
   done.appendChild(next);
-  if (referral.contact_is === "submitter") {
-    const again = document.createElement("p");
-    again.textContent = "Referring another household? Open the same link again if it allows more uses; the link page will say if it has been used up.";
-    done.appendChild(again);
-  }
   done.classList.remove("hidden");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -324,8 +310,6 @@ async function start() {
 
   watchField(form.elements.summary, form.querySelector('[data-warning-for="summary"]'));
   watchField(form.elements.story, form.querySelector('[data-warning-for="story"]'));
-  form.elements.submitter_label.addEventListener("input", updateLabelWarning);
-  for (const radio of form.elements.contact_is) radio.addEventListener("change", syncContact);
   form.elements.email.addEventListener("input", syncContact);
   form.elements.phone.addEventListener("input", syncContact);
   document.getElementById("add-member").onclick = addMember;

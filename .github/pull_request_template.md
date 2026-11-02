@@ -1,4 +1,4 @@
-Closes #
+Closes <!-- issue, if there is one -->
 
 ## What changed
 

@@ -27,25 +27,35 @@
           <h2><span class="muted">1</span> About the household</h2>
           <label class="field">
             <span>One line that describes the household</span>
-            <input type="text" name="summary" maxlength="120" required placeholder="e.g. Household of 4 — mom & three kids, ages 3–9" />
-            <span class="hint">No names. Sponsors see this line first.</span>
+            <input type="text" name="summary" maxlength="120" required placeholder="e.g. Household of 5: Mother of 4 Boys, Ages 9, 6, 4, and 3" />
+            <span class="hint">No names. Donors see this line first.</span>
           </label>
           <div class="notice notice-amber small hidden" data-warning-for="summary"></div>
         </section>
 
         <section class="card">
-          <h2><span class="muted">2</span> The story <span class="small muted">— this will be shown to sponsors</span></h2>
+          <h2><span class="muted">2</span> The story</h2>
+          <p class="muted small">The story will be shared with potential donors.</p>
           <label class="field">
-            <span>What should a sponsor know?</span>
-            <textarea name="story" maxlength="1500" placeholder="A few sentences in the household's own words. What changed this year, and what would help most."></textarea>
-            <span class="hint">Leave out last names, the children's school, and street names — anything that could identify the household. The coordinator reads this before anyone else does, and step 5 lets you keep it from sponsors.</span>
+            <span>What should a donor know?</span>
+            <textarea name="story" maxlength="1500" placeholder="Describe in a few sentences the hardships you're facing and why you need help"></textarea>
+            <span class="hint">Leave out last names, the children's school, and street names — anything that could identify the household.</span>
           </label>
           <div class="notice notice-amber small hidden" data-warning-for="story"></div>
         </section>
 
         <section class="card">
-          <h2><span class="muted">3</span> Who is in the household</h2>
-          <p class="muted small">One block per person. Sizes matter more than brands.</p>
+          <h2><span class="muted">3</span> Note to coordinator (Private)</h2>
+          <p class="muted small">This will only be shown to the coordinator</p>
+          <label class="field">
+            <span>Anything else the coordinator should know?</span>
+            <textarea name="coordinator_note" maxlength="1500" placeholder="Optional — only the coordinator will see this."></textarea>
+          </label>
+        </section>
+
+        <section class="card">
+          <h2><span class="muted">4</span> Who is in the household</h2>
+          <p class="muted small">One block per person. Make sure size information is correct.</p>
           <div id="members" class="stack"></div>
           <div class="form-actions">
             <button type="button" class="btn btn-outline" id="add-member">Add another person</button>
@@ -53,10 +63,14 @@
         </section>
 
         <section class="card">
-          <h2><span class="muted">4</span> How the coordinator reaches you</h2>
-          <p class="field-label">Who is filling this in?</p>
-          <label class="check"><input type="radio" name="contact_is" value="household" checked /> <span>This is my own household. The details below are ours.</span></label>
-          <label class="check"><input type="radio" name="contact_is" value="submitter" /> <span>I'm filling this in on behalf of a household. The details below are <strong>mine</strong>, not theirs.</span></label>
+          <h2><span class="muted">5</span> Contact information (Private)</h2>
+          <p class="muted small">How the coordinator can reach you. Only the coordinator sees this.</p>
+
+          <label class="field">
+            <span>Your first name</span>
+            <input type="text" name="first_name" maxlength="40" placeholder="e.g. Jamie" />
+            <span class="hint">First name only. No last names.</span>
+          </label>
 
           <div class="form-row">
             <label class="field">
@@ -68,30 +82,28 @@
               <input type="tel" name="phone" maxlength="40" placeholder="(555) 010-0000" />
             </label>
           </div>
-          <p class="hint">Give one or both. Only the coordinator can see these — never sponsors, never the public list.</p>
-
+          <p class="hint">Give one or both.</p>
           <div id="primary-row" class="hidden">
             <p class="field-label">Which should the coordinator try first?</p>
             <label class="check"><input type="radio" name="primary_channel" value="email" checked /> <span>Email</span></label>
             <label class="check"><input type="radio" name="primary_channel" value="phone" /> <span>Phone</span></label>
           </div>
 
-          <div id="label-row" class="hidden">
-            <label class="field">
-              <span>Your own reference for this household <span class="muted">(optional)</span></span>
-              <input type="text" name="submitter_label" maxlength="40" placeholder="e.g. Alpha, Beta, Family 3" />
-              <span class="hint"><strong>Not their name.</strong> A label only you understand, so you can tell your referrals apart. No names, initials, addresses, phone numbers or anything that identifies them. The coordinator sees it; sponsors never do.</span>
-            </label>
-            <div class="notice notice-amber small hidden" data-warning-for="label"></div>
-          </div>
           <div class="notice notice-red small hidden" id="contact-error"></div>
         </section>
 
         <section class="card">
-          <h2><span class="muted">5</span> Consent</h2>
-          <label class="check"><input type="checkbox" name="consent_wish_list" required /> <span>An adult in this household agrees that the wish list and the one-line description can be shown to sponsors.</span></label>
-          <label class="check"><input type="checkbox" name="consent_story" checked /> <span>Show the story to sponsors. <span class="muted">It is what makes a household easy to sponsor. Untick to keep it for the coordinator only.</span></span></label>
-          <p class="muted small">No photos are collected, now or later.</p>
+          <h2><span class="muted">6</span> Provider</h2>
+          <label class="field">
+            <span>Who referred you?</span>
+            <input type="text" name="referral_source" maxlength="120" placeholder="name of therapist, case manager, etc" />
+          </label>
+        </section>
+
+        <section class="card">
+          <h2><span class="muted">7</span> Consent</h2>
+          <label class="check"><input type="checkbox" name="is_guardian" required /> <span>I am the parent/guardian of the children listed.</span></label>
+          <label class="check"><input type="checkbox" name="consent_share" checked required /> <span>By submitting this form I agree to share my story and information with potential donors (names removed).</span></label>
         </section>
 
         <div class="notice notice-red hidden" id="submit-error"></div>
@@ -127,8 +139,16 @@
           </label>
         </div>
         <div class="form-row">
-          <label class="field"><span>Clothing size</span><input type="text" name="clothing_size" maxlength="40" placeholder="e.g. Shirt 8, or Women's M" /></label>
-          <label class="field"><span>Shoe size</span><input type="text" name="shoe_size" maxlength="40" placeholder="e.g. Size 1" /></label>
+          <label class="field">
+            <span>Clothing size</span>
+            <textarea name="clothing_size" maxlength="80" rows="2" class="textarea-compact" placeholder="e.g. Shirt 8, or Women's M"></textarea>
+            <span class="char-count" data-count-for="clothing_size">0/80</span>
+          </label>
+          <label class="field">
+            <span>Shoe size</span>
+            <textarea name="shoe_size" maxlength="80" rows="2" class="textarea-compact" placeholder="e.g. Size 1"></textarea>
+            <span class="char-count" data-count-for="shoe_size">0/80</span>
+          </label>
         </div>
         <div class="form-row">
           <label class="field"><span>Needs</span><input type="text" name="needs" maxlength="200" placeholder="Winter coat, jeans" /><span class="hint">Separate items with commas.</span></label>
@@ -142,6 +162,7 @@
     </template>
 
     <script src="/env.js"></script>
+    <script type="module" src="brand.js"></script>
     <script type="module" src="refer.js"></script>
   </body>
 </html>

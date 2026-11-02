@@ -27,11 +27,13 @@
   --line: #dcd2c9;
 
   --green-900: #14432e;
+  --green-deep: #124a30;
   --green-700: #1b6b45;
   --green-600: #1f7a4c;
   --green-300: #8fb49e;
   --green-100: #e9f0ea;
   --green-50: #f7faf8;
+  --green-xmas-light: #ddf0e2;
 
   --cranberry: #a81e32;
   --cranberry-700: #8e1829;
@@ -153,7 +155,7 @@ textarea {
   display: none !important;
 }
 
-/* ---------- The brand bar: green, cranberry, amber, green ---------- */
+/* ---------- The brand bar: green, cranberry, green, cranberry ---------- */
 
 .brand-bar {
   height: 5px;
@@ -161,8 +163,8 @@ textarea {
     90deg,
     var(--green-900) 0 25%,
     var(--cranberry) 25% 50%,
-    var(--amber) 50% 75%,
-    var(--green-700) 75% 100%
+    var(--green-700) 50% 75%,
+    var(--cranberry) 75% 100%
   );
 }
 
@@ -214,20 +216,23 @@ textarea {
 .site-nav {
   margin-left: auto;
   display: flex;
-  gap: 22px;
+  flex-wrap: wrap;
+  gap: 24px;
 }
 
 .site-nav a {
   text-decoration: none;
-  color: var(--ink-2);
-  font-weight: 500;
+  color: #000;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   padding: 6px 0;
   border-bottom: 2px solid transparent;
 }
 
+.site-nav a:hover,
 .site-nav a[aria-current="page"] {
-  color: var(--green-900);
-  border-color: var(--green-700);
+  border-color: var(--cranberry);
 }
 
 .page {
@@ -425,6 +430,12 @@ textarea {
   background: var(--cranberry-50);
 }
 
+.btn-lg {
+  padding: 18px 24px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
 .btn-sm {
   padding: 6px 11px;
   font-size: 0.85rem;
@@ -470,14 +481,19 @@ textarea {
   color: #fff;
 }
 
+.pill-xmas {
+  background: var(--green-xmas-light);
+  color: var(--green-deep);
+}
+
 .tag {
   display: inline-block;
-  background: var(--green-100);
-  color: var(--green-700);
+  background: var(--green-xmas-light);
+  color: var(--green-deep);
   border-radius: var(--radius-pill);
   padding: 2px 10px;
   font-size: 0.78rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .tags {
@@ -540,6 +556,7 @@ textarea {
 
 input[type="text"],
 input[type="email"],
+input[type="tel"],
 input[type="number"],
 input[type="date"],
 input[type="url"],
@@ -555,6 +572,19 @@ textarea {
 textarea {
   min-height: 110px;
   resize: vertical;
+}
+
+.textarea-compact {
+  min-height: 52px;
+  resize: none;
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  font-size: 0.78rem;
+  color: var(--ink-3);
+  margin-top: 4px;
 }
 
 input:focus,
@@ -745,7 +775,7 @@ details.section > summary .count {
 
 .progress {
   height: 8px;
-  background: #e8e1d8;
+  background: var(--green-xmas-light);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -841,6 +871,10 @@ details.section > summary .count {
     flex: 1;
   }
 
+  .title-tree {
+    height: 60px;
+  }
+
   h1 {
     font-size: 1.5rem;
   }
@@ -915,13 +949,30 @@ details.section > summary .count {
 }
 
 .story-box {
-  background: var(--cranberry-50);
-  border: 1px solid var(--cranberry-100);
+  background: var(--green-xmas-light);
+  border: 1px solid var(--green-700);
+  border-left: 6px solid var(--cranberry);
   border-radius: var(--radius);
   padding: 12px 14px;
   margin: 0 0 16px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title-row h1 {
+  color: var(--green-deep);
+}
+
+.title-tree {
+  height: 90px;
+  flex: none;
 }
 
 .people {
@@ -938,11 +989,19 @@ details.section > summary .count {
 
 .person h3 {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
   font-size: 1rem;
   margin-bottom: 6px;
+}
+
+.person-label {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .person .sizes {
@@ -952,12 +1011,15 @@ details.section > summary .count {
 }
 
 .size {
-  background: var(--sand);
+  background: var(--green-xmas-light);
+  border: 1px solid var(--green-700);
+  box-sizing: border-box;
   border-radius: var(--radius-sm);
   padding: 1px 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 400;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .person p {
@@ -1024,9 +1086,21 @@ details.section > summary .count {
   border-bottom: 1px solid var(--line);
 }
 
+.hero-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .hero h1 {
   font-size: 2.3rem;
   margin: 6px 0 12px;
+  color: var(--green-deep);
+}
+
+.hero-tree {
+  height: 110px;
+  flex: none;
 }
 
 .lede {
@@ -1097,6 +1171,21 @@ details.section > summary .count {
   margin-bottom: 16px;
 }
 
+.browse-head-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.browse-head h1 {
+  color: var(--green-deep);
+}
+
+.browse-tree {
+  height: 60px;
+  flex: none;
+}
+
 .filters {
   display: flex;
   gap: 12px;
@@ -1112,6 +1201,7 @@ details.section > summary .count {
   gap: 0;
   background: var(--paper);
   border: 1px solid var(--line);
+  border-top: 4px solid var(--cranberry);
   border-radius: var(--radius);
   overflow: hidden;
 }
@@ -1136,18 +1226,23 @@ details.section > summary .count {
 .family-icon {
   width: 56px;
   height: 56px;
+  box-sizing: border-box;
   border-radius: var(--radius);
-  background: var(--green-100);
-  color: var(--green-700);
+  background: var(--green-xmas-light);
+  border: 1px solid var(--green-700);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+}
+
+.family-icon img {
+  height: 34px;
 }
 
 .family-body h2 {
   font-size: 1.05rem;
   margin-bottom: 2px;
+  color: var(--green-700);
 }
 
 .family-ref {
@@ -1179,6 +1274,10 @@ details.section > summary .count {
 
   .hero h1 {
     font-size: 1.8rem;
+  }
+
+  .hero-tree {
+    height: 60px;
   }
 }
 
@@ -1224,9 +1323,53 @@ details.section > summary .count {
   margin-bottom: 6px;
 }
 
+.card-feature {
+  padding: 28px 28px;
+}
+
+.card-feature h2 {
+  font-size: 26px;
+}
+
+.card-feature .sponsor-steps {
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.card-feature .sponsor-steps li {
+  margin-bottom: 12px;
+}
+
+.card-feature .btn {
+  padding: 18px 24px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.card-feature-banner {
+  display: block;
+  height: 48px;
+  margin: 0 auto 14px;
+}
+
+.gift-icon {
+  height: 28px;
+  vertical-align: middle;
+}
+
+.thank-you-tree {
+  height: 32px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
 .confirmed-head {
   text-align: center;
   padding: 16px 0 24px;
+}
+
+.confirmed-head h1 {
+  color: var(--green-deep);
 }
 
 .confirmed-mark {
@@ -1234,7 +1377,9 @@ details.section > summary .count {
   height: 56px;
   margin: 0 auto 12px;
   border-radius: 50%;
-  background: var(--green-100);
+  background: var(--green-xmas-light);
+  border: 2px solid var(--green-700);
+  box-sizing: border-box;
   color: var(--green-700);
   font-size: 1.6rem;
   font-weight: 700;
@@ -1243,9 +1388,36 @@ details.section > summary .count {
   justify-content: center;
 }
 
+.confirmed-thanks {
+  margin: 10px 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--cranberry);
+}
+
+.confirmed-gifts {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.confirmed-gift {
+  height: 40px;
+}
+
+.eyebrow-xmas {
+  color: var(--green-deep);
+}
+
 .plain-list {
   margin: 6px 0 12px;
   padding-left: 1.2em;
+}
+
+.plain-list b {
+  color: var(--green-700);
+  font-weight: 600;
 }
 
 .checklist {
@@ -1268,12 +1440,38 @@ details.section > summary .count {
   align-items: center;
 }
 
+.claim-card {
+  border-left: 6px solid var(--cranberry);
+}
+
+.claim-title-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .claim-card h2 {
   margin-bottom: 2px;
+  color: var(--green-700);
 }
 
 .claim-card .two-col {
   margin-top: 14px;
+}
+
+.claim-member + .claim-member {
+  margin-top: 14px;
+}
+
+.claim-member-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 10px;
+  row-gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 0;
 }
 
 .claim-actions {
@@ -1294,4 +1492,38 @@ details.section > summary .count {
 .uses-field {
   margin: 0;
   width: 240px;
+}
+
+p.hint {
+  font-size: 0.82rem;
+  color: var(--ink-3);
+  margin: -6px 0 12px;
+}
+
+/* A logo set in Drive settings replaces the gift icon. */
+.brand img {
+  height: 32px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+  flex: none;
+}
+
+.color-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.color-row .field {
+  min-width: 150px;
+}
+
+input[type="color"] {
+  width: 64px;
+  height: 36px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
 }

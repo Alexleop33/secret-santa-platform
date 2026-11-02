@@ -36,10 +36,23 @@ defeats the entire purpose of the exercise. Sequence, not fan-out.
 
 ## Hard rule: no family PII, anywhere
 
-No names, addresses, or phone numbers for referred households — not in the
-database, not in URLs, not in query strings, not in logs, not in error
-messages, not in a CSV export. Households are a reference code (`#14`) and a
-story. **No photos, ever** (see the product repo's decisions.md for why).
+No names or addresses for referred households — not in the database, not in
+URLs, not in query strings, not in logs, not in error messages, not in a CSV
+export. Households are a reference code (`#14`) and a story. **No photos,
+ever** (see the product repo's decisions.md for why).
+
+**One narrow exception: contact details.** Locked with Alex on 2026-10-21:
+the person filling in the form gives a **first name, email and/or phone,
+and who referred them**, nothing else. They are stored only in the
+admin-only `household_contacts` table, deleted on rejection, on withdrawal
+and by the season-end purge; never shown to donors, never in a view, a URL,
+a log line, an error message or a CSV export. "Who referred you" is asked
+in its own Provider section and stored with the contact. The submitter must
+attest "I am the parent/guardian of the children listed" (2026-10-22), so
+every contact is the household's own. No last names, no children's names,
+no addresses. Free text is still refused if it contains a phone
+number, email or street address. This supersedes the product repo's
+2026-10-10 "email only" entry.
 
 Caseworker and donor **emails** are fine — needed for login.
 
@@ -266,11 +279,14 @@ Manrope headings over IBM Plex Sans. Light theme only.
 - **Name the tradeoff.** Two reasonable approaches → both, recommend one, why.
 - Push back. Agreement is worth less than accuracy.
 
-## Every PR needs a linked issue
+## Link the issue when there is one
 
-CI fails without a closing keyword. Use the full cross-repo form when closing
-a product Story:
+Link the Story or issue a PR closes, in the full cross-repo form for a
+product Story:
 
 ```
 Closes Alexleop33/secret-santa-product#12
 ```
+
+CI no longer enforces it: the linked-issue check was removed on
+2026-11-02 after it blocked a release over a blank `Closes #`.
