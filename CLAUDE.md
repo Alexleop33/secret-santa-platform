@@ -279,11 +279,14 @@ Manrope headings over IBM Plex Sans. Light theme only.
 - **Name the tradeoff.** Two reasonable approaches → both, recommend one, why.
 - Push back. Agreement is worth less than accuracy.
 
-## Every PR needs a linked issue
+## Link the issue when there is one
 
-CI fails without a closing keyword. Use the full cross-repo form when closing
-a product Story:
+Link the Story or issue a PR closes, in the full cross-repo form for a
+product Story:
 
 ```
 Closes Alexleop33/secret-santa-product#12
 ```
+
+CI no longer enforces it: the linked-issue check was removed on
+2026-11-02 after it blocked a release over a blank `Closes #`.
