@@ -46,6 +46,14 @@ function sponsorOf(h) {
   return claim.sponsor_email || (claim.sponsor_label ? `offline: ${claim.sponsor_label}` : "sponsor");
 }
 
+// household_contacts is admin-only and joined here the same way queue.js
+// already does it — Supabase returns the embed as an array even though
+// it's a one-to-one relationship.
+function contactOf(h) {
+  const contact = h.household_contacts;
+  return (Array.isArray(contact) ? contact[0] : contact) ?? null;
+}
+
 function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -109,13 +117,16 @@ function renderRoster() {
 
   const table = el("table", "table");
   const head = table.createTHead().insertRow();
-  for (const label of ["ID", "Household", "Status", "Sponsor", "Updated", ""]) {
+  for (const label of ["ID", "Name", "Provider", "Household", "Status", "Sponsor", "Updated", ""]) {
     head.appendChild(el("th", null, label));
   }
   const body = table.createTBody();
   for (const h of households) {
     const row = body.insertRow();
     row.insertCell().appendChild(el("strong", null, h.ref_code));
+    const contact = contactOf(h);
+    row.insertCell().textContent = contact?.household_first_name || "—";
+    row.insertCell().textContent = contact?.referral_source || "—";
     row.insertCell().textContent = h.summary;
     const [cls, label] = STATUS[shownStatus(h)] ?? ["pill-grey", h.status];
     row.insertCell().appendChild(el("span", `pill ${cls}`, label));
@@ -129,16 +140,25 @@ function renderRoster() {
 }
 
 // The export. Pending rows included (the handbook flagged their absence as
-// a gap). No contact column exists to leave out.
+// a gap). Name and provider are allowed here by name only (CLAUDE.md,
+// 2026-11-03) — everything else in household_contacts (email, phone,
+// contact_is, the coordinator note) stays out. No wildcard embed, no
+// spreading `contact` into the row: every field that leaves here must be
+// named on purpose.
 document.getElementById("export").onclick = () => {
-  const rows = households.map((h) => ({
-    id: h.ref_code,
-    household: h.summary,
-    status: shownStatus(h),
-    sponsor: sponsorOf(h),
-    updated: new Date(h.updated_at).toISOString().slice(0, 10),
-  }));
-  const columns = [["id", "id"], ["household", "household"], ["status", "status"], ["sponsor", "sponsor"], ["updated", "updated"]];
+  const rows = households.map((h) => {
+    const contact = contactOf(h);
+    return {
+      id: h.ref_code,
+      name: contact?.household_first_name ?? "",
+      provider: contact?.referral_source ?? "",
+      household: h.summary,
+      status: shownStatus(h),
+      sponsor: sponsorOf(h),
+      updated: new Date(h.updated_at).toISOString().slice(0, 10),
+    };
+  });
+  const columns = [["id", "id"], ["name", "name"], ["provider", "provider"], ["household", "household"], ["status", "status"], ["sponsor", "sponsor"], ["updated", "updated"]];
   const stamp = new Date().toISOString().slice(0, 10);
   downloadCsv(`sub-for-santa-roster-${stamp}.csv`, toCsv(rows, columns));
 };
@@ -148,7 +168,7 @@ async function load() {
     supabase.from("public_campaign").select("*").limit(1),
     supabase
       .from("households")
-      .select("id, ref_code, summary, status, referred_on, updated_at")
+      .select("id, ref_code, summary, status, referred_on, updated_at, household_contacts ( household_first_name, referral_source )")
       .order("status", { ascending: true })
       .order("referred_on", { ascending: true }),
     supabase.from("claims_with_sponsor").select("*"),
