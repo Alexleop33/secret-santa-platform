@@ -43,11 +43,13 @@ insert into wish_items (household_id, member_id, kind, label, position) values
   ('00000000-0000-4000-9000-000000000022', '00000000-0000-4000-9100-000000000007', 'would_love', 'A good book', 2);
 
 -- Fake contact emails, one per sandbox household. The .test domain can
--- never be delivered to.
-insert into household_contacts (household_id, email) values
-  ('00000000-0000-4000-9000-000000000014', 'family-14@example.test'),
-  ('00000000-0000-4000-9000-000000000007', 'family-7@example.test'),
-  ('00000000-0000-4000-9000-000000000022', 'family-22@example.test');
+-- never be delivered to. Name and provider are deliberately uneven across
+-- the three — #7 has no provider, #22 has no name — so the dashboard's
+-- "—" fallback has something real to prove itself against.
+insert into household_contacts (household_id, email, household_first_name, referral_source) values
+  ('00000000-0000-4000-9000-000000000014', 'family-14@example.test', 'Maria', 'School counselor'),
+  ('00000000-0000-4000-9000-000000000007', 'family-7@example.test', 'Jordan', null),
+  ('00000000-0000-4000-9000-000000000022', 'family-22@example.test', null, 'Family services');
 
 -- The sandbox drive's contact details. Obviously fake: no real person,
 -- address or phone number. The live site gets its real values typed in by
@@ -60,3 +62,13 @@ update campaigns set
   drop_off_address = 'Community Hall, 1 Example Way',
   drop_off_hours = 'Weekdays 9–5 · Sat Dec 14 to 5pm'
 where id = '00000000-0000-4000-a000-000000002026';
+
+-- Local-only admin bootstrap, same idea as the migration that seeds
+-- David's invite, just here instead: `npm run dev` runs `supabase db
+-- reset` every time, which wipes anything `make-admin` wrote but
+-- reloads this file, so this is what makes the invite survive a
+-- restart. seed.sql never runs against the hosted dev or prod projects
+-- (see docs/environments.md), so this reaches nobody but your own
+-- machine.
+insert into admin_invites (email) values ('alexleppard9@gmail.com')
+on conflict (email) where used_at is null do nothing;

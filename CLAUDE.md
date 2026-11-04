@@ -54,6 +54,18 @@ no addresses. Free text is still refused if it contains a phone
 number, email or street address. This supersedes the product repo's
 2026-10-10 "email only" entry.
 
+**A second, narrower exception inside that one: first name and provider may
+appear in the roster CSV.** Locked with Alex on 2026-11-03 (see the product
+repo's decisions.md). Of the fields above, only
+`household_contacts.household_first_name` and `.referral_source` may also
+appear in the coordinator dashboard's roster CSV export, alongside the
+columns it already carries. **Email and phone are not included by this
+exception and stay bound by the rule above — never a view, a URL, a log
+line, an error message, or a CSV export.** Any code touching the roster
+export must select these two fields by name, never `select("*")` or a bare
+`household_contacts (*)` embed, so the column list stays an explicit,
+reviewable allow-list rather than something that silently grows.
+
 Caseworker and donor **emails** are fine — needed for login.
 
 Policy alone won't hold. A caseworker in a hurry will type "Maria, 412 Oak St"
