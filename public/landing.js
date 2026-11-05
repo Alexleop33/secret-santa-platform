@@ -29,7 +29,7 @@ if (campaign) {
     `Drop off the gifts ${formatDate(campaign.gifts_due)}.`;
   document.getElementById("footer-contact").textContent =
     `Questions? ${campaign.coordinator_name} · ${campaign.contact_phone} · ${campaign.contact_email}`;
-  document.getElementById("count-days").textContent = `${daysUntil(campaign.gifts_due)} days until the drop-off deadline`;
+
 }
 
 // The admin can switch the public count off; then the card says less.
@@ -45,10 +45,4 @@ if (count && count.need_sponsor != null) {
   document.getElementById("count-num").textContent = "";
   document.getElementById("count-label").textContent = "Families are waiting for a sponsor";
   document.getElementById("count-sub").textContent = "";
-}
-if (count) {
-  const review = Number(count.awaiting_review);
-  document.getElementById("count-review").textContent = review
-    ? `${review} more referral${review === 1 ? "" : "s"} awaiting review`
-    : "";
 }
