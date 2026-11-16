@@ -22,7 +22,9 @@ insert into household_members (id, household_id, position, role, age) values
 insert into wish_items (id, household_id, member_id, kind, label, position) values
   ('00000000-0000-4000-9200-000000000201', '00000000-0000-4000-9000-000000000201', '00000000-0000-4000-9100-000000000201', 'need', 'Coat', 1);
 
-update campaigns set sponsor_cap = 2, claims_close = current_date + 30, status = 'open'
+-- gifts_due moves with claims_close so the dates-in-order check holds
+-- whatever today's date is (the seed's gifts_due is fixed).
+update campaigns set sponsor_cap = 2, claims_close = current_date + 30, gifts_due = current_date + 60, status = 'open'
 where id = '00000000-0000-4000-a000-000000002026';
 
 -- ---------- anonymous ----------

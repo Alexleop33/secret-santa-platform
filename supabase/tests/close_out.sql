@@ -14,7 +14,10 @@ insert into households (id, ref_code, summary, status, referred_on, consent_wish
 insert into household_contacts (household_id, email) values
   ('00000000-0000-4000-9000-000000000401', 'z1@example.test');
 
-update campaigns set status = 'open', claims_close = current_date + 30
+-- gifts_due moves too: the seed's fixed gifts_due must stay on or after
+-- claims_close, or this update fails the dates-in-order check once the
+-- calendar gets within 30 days of it.
+update campaigns set status = 'open', claims_close = current_date + 30, gifts_due = current_date + 60
 where id = '00000000-0000-4000-a000-000000002026';
 
 -- The purge refuses while the drive is open, and API roles cannot call it.
