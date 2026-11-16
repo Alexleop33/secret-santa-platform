@@ -12,7 +12,10 @@ values ('00000000-0000-4000-8000-000000000001', 'admin');
 insert into households (id, ref_code, summary, status, referred_on, consent_wish_list) values
   ('00000000-0000-4000-9000-000000000301', '#x1', 'live one', 'live', now(), true),
   ('00000000-0000-4000-9000-000000000302', '#x2', 'live two', 'live', now(), true);
-update campaigns set status = 'open', claims_close = current_date + 30
+-- gifts_due moves too: the seed's fixed gifts_due must stay on or after
+-- claims_close, or this update fails the dates-in-order check once the
+-- calendar gets within 30 days of it.
+update campaigns set status = 'open', claims_close = current_date + 30, gifts_due = current_date + 60
 where id = '00000000-0000-4000-a000-000000002026';
 
 -- A donor cannot record an offline sponsor or release on someone's behalf.
