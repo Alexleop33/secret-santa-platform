@@ -1,14 +1,14 @@
 # Deploys the LIVE site — the one families and donors use — when `main`
 # changes. `main` only ever changes by merging `dev` into it (see
-# main-from-dev-only.yml and the branch protection in docs/environments.md),
-# and this workflow only runs its deploy job after a named reviewer has
-# approved it in GitHub: the `production` environment has required
-# reviewers, so the job sits at "Waiting" until one of them clicks Approve.
+# main-from-dev-only.yml and the branch protection in docs/environments.md).
+# The review happens on that pull request; once it merges, this runs
+# without a further click. (The `production` environment had required
+# reviewers until 2026-11-16; see docs/environments.md, prod §3.)
 #
-# Three jobs, in order:
+# Two jobs, in order:
 #   1. test    — the same pgTAP and unit tests every PR runs. A red test
 #                stops here; nothing is deployed.
-#   2. deploy  — waits for approval, then:
+#   2. deploy  — then:
 #        a. `supabase db push` applies new migrations to the PROD project.
 #           Migrations ONLY. No --include-seed: seed.sql is fake data for
 #           laptops and must never reach the live database.

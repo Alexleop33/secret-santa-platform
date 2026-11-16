@@ -100,7 +100,7 @@ demo site on the sandbox Supabase project. `main` deploys to the live site
 on a separate project that is never seeded and never edited by hand. The
 browser picks its database from the page's hostname, and anything it doesn't
 recognise goes to dev — never prod. A release is a pull request from `dev`
-into `main`, and the deploy itself waits for a named reviewer. Nobody changes
+into `main`; once it merges, the deploy runs on its own. Nobody changes
 the live database by hand; the one exception is written down in
 [docs/break-glass.md](docs/break-glass.md), and the season-end deletion of
 contact rows is a reviewed GitHub workflow, not a SQL editor. The full map,

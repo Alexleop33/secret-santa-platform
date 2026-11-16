@@ -383,6 +383,27 @@ own words, you understand the slice.
   Three colours cover "make it look like us"; arbitrary CSS would also
   cover "make it lie".
 
+### 25. "Expire now" for referral links, and the deploy gate moves to the PR — PR #106, #107
+
+- The admin asked how to stop a referral link that had already gone out.
+  There was no way short of break-glass SQL. Now every usable row on the
+  Referral links page has **Expire now**: a confirm, then the link's expiry
+  moves one second into the past. The form's status check and the
+  submission function already refuse a past date, so nothing new has to be
+  kept in step. The row shows *Closed <date>* with who did it, the activity
+  log gets a line, and nothing is deleted.
+- Three pgTAP files set `claims_close = current_date + 30` against the
+  seed's fixed `gifts_due` and started failing on Nov 15. They move
+  `gifts_due` too now.
+- The `production` environment's required reviewers were removed the same
+  day. With one person doing both the code review and the deploy approval,
+  the second click only delayed an urgent fix. The release gate is the
+  code-owner review on the `dev` → `main` pull request; `deploy-prod.yml`
+  runs on its own once that merges. Docs updated to match.
+- **Say it back:** a link's expiry date is the only thing the form checks,
+  so "expire now" is "set the date to a second ago". And a gate is worth
+  keeping only if a different person stands at it.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close
