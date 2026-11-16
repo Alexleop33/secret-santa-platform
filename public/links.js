@@ -22,10 +22,37 @@ function linkFor(token) {
   return `${window.location.origin}/refer.html#t=${token}`;
 }
 
+// "Closed" is a person's decision; "Expired" is the date arriving. The
+// page tells them apart so a stopped link stays visibly stopped.
 function stateOf(link) {
   if (link.uses >= link.max_uses) return { label: "Used up", pill: "pill-grey" };
+  if (link.closed_at) return { label: `Closed ${new Date(link.closed_at).toLocaleDateString()}`, pill: "pill-rejected" };
   if (new Date(link.expires_at) < new Date()) return { label: "Expired", pill: "pill-rejected" };
-  return { label: "Usable", pill: "pill-live" };
+  return { label: "Usable", pill: "pill-live", usable: true };
+}
+
+// Stops a link today. The database does the real work — it refuses anyone
+// but the admin and a link that is already finished — and moves the expiry
+// into the past, which every check already honours. Nothing is deleted:
+// the row stays so the referrals that came through it keep their link.
+async function expireNow(link, button) {
+  const made = new Date(link.created_at).toLocaleString();
+  const sure = window.confirm(
+    `Expire this link now?\n\nMade ${made}, used ${link.uses} of ${link.max_uses}.\n` +
+    `Nobody will be able to submit through it after this. It can't be undone.`,
+  );
+  if (!sure) return;
+
+  button.disabled = true;
+  button.textContent = "Expiring…";
+  const { error } = await supabase.rpc("expire_referral_link", { p_id: link.id });
+  if (error) {
+    button.disabled = false;
+    button.textContent = "Expire now";
+    window.alert(`Couldn't expire the link: ${error.message}`);
+    return;
+  }
+  await loadLinks();
 }
 
 function renderList(links) {
@@ -41,7 +68,7 @@ function renderList(links) {
   const table = document.createElement("table");
   table.className = "table";
   const head = table.createTHead().insertRow();
-  for (const label of ["Created", "Expires", "Uses", "State", "Referrals"]) {
+  for (const label of ["Created", "Expires", "Uses", "State", "Referrals", ""]) {
     const cell = document.createElement("th");
     cell.textContent = label;
     head.appendChild(cell);
@@ -49,7 +76,15 @@ function renderList(links) {
   const body = table.createTBody();
   for (const link of links) {
     const row = body.insertRow();
-    row.insertCell().textContent = new Date(link.created_at).toLocaleString();
+    // The first few characters of the id, so two links made the same day
+    // can be told apart over the phone. Not a secret: the token is never
+    // stored, and the id opens nothing.
+    const created = row.insertCell();
+    created.textContent = new Date(link.created_at).toLocaleString();
+    const short = document.createElement("span");
+    short.className = "small muted";
+    short.textContent = ` · ${link.id.slice(0, 8)}`;
+    created.appendChild(short);
     row.insertCell().textContent = new Date(link.expires_at).toLocaleString();
     row.insertCell().textContent = `${link.uses} of ${link.max_uses}`;
     const state = stateOf(link);
@@ -61,6 +96,16 @@ function renderList(links) {
     // household ever has.
     const codes = (link.households ?? []).map((h) => h.ref_code);
     row.insertCell().textContent = codes.length ? codes.join(", ") : "—";
+
+    const actions = row.insertCell();
+    if (state.usable) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-outline btn-sm";
+      button.textContent = "Expire now";
+      button.onclick = () => expireNow(link, button);
+      actions.appendChild(button);
+    }
   }
   list.appendChild(table);
 }
@@ -68,7 +113,7 @@ function renderList(links) {
 async function loadLinks() {
   const { data, error } = await supabase
     .from("referral_links")
-    .select("id, created_at, expires_at, uses, max_uses, households ( ref_code )")
+    .select("id, created_at, expires_at, closed_at, uses, max_uses, households ( ref_code )")
     .order("created_at", { ascending: false });
 
   if (error) {

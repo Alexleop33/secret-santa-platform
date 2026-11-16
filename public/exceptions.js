@@ -26,6 +26,7 @@ const ACTIONS = {
   claimed: "claimed",
   released: "released",
   delivered: "marked delivered",
+  referral_link_closed: "closed a referral link early",
 };
 const ROLES = { admin: "coordinator", donor: "sponsor", family: "family", system: "system" };
 
