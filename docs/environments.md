@@ -10,7 +10,7 @@ Three environments, three databases, and a different way into each.
 | Database | Supabase CLI in Docker | Supabase project `wiobafdpmzzrzzqavjbf` | a **separate** Supabase project in its own organization, created by a human |
 | Data | `seed.sql` — three fake households | the same three fake households | real. Never seeded. |
 | Sign-in | emailed link → Mailpit; Google if configured | Google | Google |
-| Deployed by | you, with `npm run dev` | GitHub Actions on every push to `dev` | GitHub Actions on every push to `main`, after a named reviewer approves |
+| Deployed by | you, with `npm run dev` | GitHub Actions on every push to `dev` | GitHub Actions on every push to `main`. The review happens on the `dev` → `main` pull request, not at the deploy |
 | Who can change the database by hand | you | Alex, via Studio or the MCP | **nobody.** [Break-glass](break-glass.md) only |
 
 **How the browser knows which database to use:** `public/config.js` looks at
@@ -156,7 +156,7 @@ Dev gets its own client so its test-user list stays apart from prod's.
 
 Real families' referrals land here. Everything below is done **once**, by a
 human, and ticked in PR 3. The rule afterwards: **nobody changes prod by
-hand.** Code reaches it only through `dev` → `main` → an approved deploy. Data
+hand.** Code reaches it only through a reviewed `dev` → `main` pull request and the deploy that follows. Data
 changes by hand only through [break-glass.md](break-glass.md).
 
 ### 1. Supabase — a new project in its own organization — *Human (David, for now)*
@@ -217,9 +217,11 @@ changes by hand only through [break-glass.md](break-glass.md).
 - [ ] Settings → Collaborators → add **`dwelch2344`** (write). Code owners
       must be collaborators for required reviews to count.
 - [ ] Settings → Environments → **New environment: `production`**.
-  - **Required reviewers:** `dwelch2344` and `Alexleop33`. Either one
-    approving releases the deploy; a push to `main` sits at *Waiting* until
-    then.
+  - **Required reviewers: none.** The gate is the pull request into `main`
+    (a code owner reviews it, below), not a second click at the deploy. The
+    environment had required reviewers from 2026-10-15 to 2026-11-16; they
+    were removed because with one person doing both the review and the
+    approval, the second click only added delay to urgent fixes.
   - **Deployment branches:** *Selected branches* → `main` only.
 - [ ] Environment secrets:
 
@@ -271,8 +273,8 @@ Settings → Branches → Add rule (or Rulesets, same settings). **Exact values:
 - [ ] Open a pull request `dev` → `main`. The *Only dev may merge into main*
       check is green; the *test* check is green; a code owner approves;
       merge.
-- [ ] Actions → *Deploy prod* → the `deploy` job shows **Waiting for
-      review**. Approve it. Both steps run: migrations, then upload.
+- [ ] Actions → *Deploy prod* runs on its own: tests, then migrations,
+      then upload. About two minutes.
 - [ ] Open `https://<pages-project>.pages.dev`. Google sign-in only — no
       email form. Nothing else works yet, and that's right.
 - [ ] **Confirm prod is empty:** prod project → Table editor → `households`
@@ -302,8 +304,8 @@ rather than quietly talking to dev.
       protection.
 - [ ] A pull request into `main` from any branch but `dev` fails
       *Only dev may merge into main*.
-- [ ] A push to `main` **waits** at the `production` environment until a
-      required reviewer approves.
+- [ ] A pull request into `main` cannot be merged without a code owner's
+      review (branch protection, above). That review is the release gate.
 
 ### Things that must stay true
 
@@ -328,7 +330,9 @@ family contact rows are deleted. Nobody runs SQL for this.
       empties and claims stop. Nothing is deleted yet.
 - [ ] GitHub → Actions → **Retention purge** → *Run workflow*. Type `purge`
       in the confirm box; leave *target* as `production`.
-- [ ] A required reviewer of the `production` environment approves the run.
+- [ ] The run starts on its own once the confirm box matches; there is no
+      second approval. The typed `purge` and the function's own refusal of
+      an open drive are the two guards.
 - [ ] The run links the project with the same token and password the deploy
       uses and calls `purge_retained_contacts(...)` through
       `supabase db query --linked`. The function refuses an open drive and

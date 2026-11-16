@@ -170,7 +170,8 @@ guidance does not outvote one deliberate decision.
 ## Hard rule: nobody touches prod by hand
 
 The live Supabase project is changed by one path: a migration merged into
-`dev`, then into `main`, then a deploy a named reviewer approved. No MCP, no
+`dev`, then into `main` through a reviewed pull request, then the deploy
+that follows. No MCP, no
 `supabase link`, no agent, no SQL editor. The exception is the written
 emergency procedure in `docs/break-glass.md`, and every use of it is a dated
 line in the product repo's `decisions.md`. The first use is expected: the
@@ -214,7 +215,8 @@ it as load-bearing, not as a report.
 - **Deployment: Cloudflare Pages, uploaded by GitHub Actions.** Decided
   2026-10-15 in the Environments Epic, once a page rendered. `dev` deploys
   to the demo site on the sandbox Supabase project; `main` deploys to the
-  live site on a separate project, behind a required approval. The
+  live site on a separate project; the gate is the reviewed pull request
+  into `main`, not a second click at the deploy (changed 2026-11-16). The
   database is migrated first, the site uploaded second, in one workflow.
   Cloudflare's Git integration stays off for that reason. Every console
   step is a human checklist in `docs/environments.md`; agents never hold
