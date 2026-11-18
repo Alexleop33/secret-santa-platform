@@ -110,8 +110,10 @@ port = 54324
 # Uncomment to expose additional ports for testing user applications that send emails.
 # smtp_port = 54325
 # pop3_port = 54326
-# admin_email = "admin@email.com"
-# sender_name = "Admin"
+# The From line on local sign-in emails, so Mailpit shows what a real inbox
+# would. The hosted projects set theirs in the "Configure auth" workflow.
+admin_email = "signin@example.test"
+sender_name = "Sub for Santa"
 
 [storage]
 enabled = true
@@ -237,7 +239,8 @@ max_frequency = "1s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
-otp_expiry = 3600
+# Ten minutes, the same as the hosted projects and as the email says.
+otp_expiry = 600
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]
@@ -253,6 +256,13 @@ otp_expiry = 3600
 # [auth.email.template.invite]
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
+
+# The sign-in email, with the 6-digit code in the subject so it reads from
+# the notification. The hosted projects use the same file via the
+# "Configure auth" workflow (.github/workflows/configure-auth.yml).
+[auth.email.template.magic_link]
+subject = "Your Sub for Santa sign-in code: {{ .Token }}"
+content_path = "./supabase/templates/magic_link.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]

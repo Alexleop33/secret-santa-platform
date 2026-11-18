@@ -404,6 +404,39 @@ own words, you understand the slice.
   so "expire now" is "set the date to a second ago". And a gate is worth
   keeping only if a different person stands at it.
 
+### 26. Sign in with an emailed code — 2026-11-18
+
+- Sponsors reported Google's consent screen as a scam: it names the
+  Supabase project's domain, and nothing short of a domain we own and a
+  Google brand review changes that. An emailed code needs the domain too
+  (for sending) but nothing else, and it lets in sponsors without a Google
+  account.
+- The sign-in page now asks the project which providers are on
+  (`/auth/v1/settings`, a public endpoint) and offers those: email code as
+  the primary action, Google as "Continue with Google" while it stays on.
+  Turning Google off in the dashboard removes the button on the next page
+  load; no deploy.
+- Code, not link, as the primary: six digits typed back on the page, with
+  the phone's one-time-code autofill. The same email carries a one-tap
+  link for people who prefer it. Wrong code, resend with a one-minute
+  countdown, and "use a different email" are all on the page.
+- Same email, same account: a code sent to an address that already has a
+  Google account signs that account in. The user id doesn't change, so the
+  admin's role and sponsors' claims come along. Checked in the browser:
+  two sign-ins, one `auth.users` row.
+- The hosted projects are configured by a workflow, not by clicking
+  through three dashboard pages twice: `configure-auth.yml` runs
+  `scripts/configure-auth.js`, which sets sixteen named fields through the
+  Management API with the access token the deploy already holds, shows a
+  dry run first, and reads the project back to prove each field took. It
+  is deliberately not `supabase config push`.
+- The email is one file, `supabase/templates/magic_link.html`, read by the
+  local stack and pasted into the hosted projects by the workflow. Code in
+  the subject line, so it reads from the notification.
+- **Say it back:** the page doesn't decide how people sign in; the project
+  does, and the page asks. That's why flipping a provider is a dashboard
+  (or workflow) change and not a release.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close

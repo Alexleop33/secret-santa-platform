@@ -17,8 +17,9 @@
 #
 # NEVER add `supabase config push` here. It would copy supabase/config.toml
 # — which turns on sign-in by email for laptops — onto the live project.
-# Auth settings on prod are changed by a human in the dashboard, following
-# docs/environments.md, and nowhere else.
+# Auth settings on prod change through the "Configure auth" workflow (a
+# named list of fields, read back after writing) or by a human in the
+# dashboard, following docs/environments.md, and nowhere else.
 #
 # Every value comes from the GitHub environment `production`. Nothing is
 # hard-coded, nothing in this file is a secret.
