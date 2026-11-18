@@ -34,13 +34,15 @@ where email = 'REPLACE_WITH_REAL_EMAIL';
 ## `config.toml` is local-only. Never `supabase config push`.
 
 `config.toml` configures the stack that `supabase start` runs on your
-machine. It turns on sign-in by emailed link (the link lands in Mailpit) and
-raises the email rate limit, because a fresh clone has no Google OAuth client
-to sign in with.
+machine: sign-in by emailed code (the email lands in Mailpit), a generous
+email rate limit, Google only if you export a client id and secret.
 
-Those settings are **wrong for a hosted project**. Both hosted projects keep
-the email provider off and use Google only. `supabase config push` would copy
-this file's auth settings onto whichever project is linked — so it is never
-run, by a person or a workflow, against any hosted project. Schema changes
-travel as migrations (`supabase db push`); auth settings are changed by a
-human in the dashboard, following the per-environment checklist.
+Parts of it are **wrong for a hosted project** (the rate limits, the local
+URLs, the Mailpit sender). `supabase config push` would copy the whole file
+onto whichever project is linked — so it is never run, by a person or a
+workflow, against any hosted project. Schema changes travel as migrations
+(`supabase db push`). Hosted auth settings change through the "Configure
+auth" workflow (`.github/workflows/configure-auth.yml`), which sets a named
+list of fields and reads them back, or by a human in the dashboard. The
+sign-in email itself is one file, `templates/magic_link.html`, used by the
+local stack directly and pasted into the hosted projects by that workflow.

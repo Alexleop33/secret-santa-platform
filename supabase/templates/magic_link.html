@@ -1,0 +1,15 @@
+<!-- The sign-in email. One template for every environment: the local stack
+     reads it from here (supabase/config.toml); the hosted projects get the
+     same text through the "Configure auth" workflow, which pastes this file
+     into the project's settings. Plain HTML with inline styles, no images,
+     no scripts: that is what mail apps render reliably and what spam
+     filters trust. Supabase fills in {{ .Token }} (the 6-digit code),
+     {{ .ConfirmationURL }} (the one-tap link) and {{ .SiteURL }}. -->
+<div style="font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; color: #1a1614; max-width: 480px; margin: 0 auto; padding: 24px 16px; line-height: 1.5;">
+  <p style="font-weight: 800; font-size: 18px; color: #124a30; margin: 0 0 16px;">Sub for Santa</p>
+  <p style="margin: 0 0 16px;">Here is your sign-in code. It works for the next 10 minutes.</p>
+  <p style="font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 32px; letter-spacing: 0.2em; font-weight: 600; text-align: center; background: #f4efe9; border: 1px dashed #dcd2c9; border-radius: 8px; padding: 14px; margin: 0 0 16px;">{{ .Token }}</p>
+  <p style="margin: 0 0 16px;">Type it on the page you came from. If you didn't ask for this, you can ignore it; nobody can sign in without the code.</p>
+  <p style="margin: 0 0 24px; font-size: 14px; color: #5d5651;">Prefer a link? <a href="{{ .ConfirmationURL }}" style="color: #1b6b45;">Sign in with one tap</a>.</p>
+  <p style="font-size: 12px; color: #8c837d; border-top: 1px solid #e6e1db; padding-top: 12px; margin: 0;">Sent by the Sub for Santa gift drive, {{ .SiteURL }}. You received this because someone entered your address there.</p>
+</div>

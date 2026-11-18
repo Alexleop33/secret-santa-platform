@@ -64,9 +64,9 @@ npm run dev
 The first run pulls a few Docker images, so give it a couple of minutes.
 Then:
 
-1. Open <http://localhost:3000/signin.html> and use **"Email me a sign-in
-   link"**. The email doesn't go anywhere — open **Mailpit** at
-   <http://127.0.0.1:54324> and click the link there.
+1. Open <http://localhost:3000/signin.html> and use **"Email me a code"**.
+   The email doesn't go anywhere — open **Mailpit** at <http://127.0.0.1:54324>,
+   read the 6-digit code from the subject line, and type it in.
 2. Make that account the admin: `npm run make-admin -- you@example.test`
    (the same address you just used).
 3. Open <http://localhost:3000/dashboard.html>. Three fake households are
@@ -125,7 +125,7 @@ Decided 2026-10-11. `CLAUDE.md` carries the reasoning behind each line.
 |---|---|---|
 | Front end | Plain HTML, CSS, JavaScript | No framework, no TypeScript — Alex can read every line. One stylesheet, self-hosted fonts, a strict CSP |
 | Database | Postgres with row-level security | The database refuses the wrong reader, rather than the app remembering to. Functions check the caller for every write |
-| Login | Google sign-in | No passwords stored. The local Docker database also accepts an emailed link, so a fresh clone can sign in. Families have no login |
+| Login | Emailed 6-digit code, Google as a second option | No passwords stored. The page offers whichever the Supabase project has switched on. Locally the code lands in Mailpit, so a fresh clone can sign in. Families have no login |
 | Host | Supabase, for now | Carries the session and the RLS bridge; the anon key is public, so RLS is load-bearing |
 | Deploy | Cloudflare Pages, uploaded by GitHub Actions | `dev` → demo site, `main` → live site, database migrated first in the same workflow |
 
