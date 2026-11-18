@@ -332,22 +332,29 @@ relative to a deploy; nothing breaks in between.
 **Why a domain comes first.** Supabase's built-in mailer only delivers to
 the project's own team members. Real mail needs a mail service, and every
 mail service needs DNS records on a domain you control before it will send
-from it. `example.com` below stands for the one you register.
+from it. The domain is **`projectconnectionsanta.org`**, registered at
+Namecheap (2026-11-18); its DNS is managed there unless the nameservers
+are moved.
 
 ### 1. Domain and mail service — *Human (David)*
 
-- [ ] Register the domain in Cloudflare Registrar (same account as Pages):
-      <https://dash.cloudflare.com/?to=/:account/domains/register>
+- [x] Domain: `projectconnectionsanta.org`, Namecheap, renews Aug 2028.
 - [ ] Resend account: <https://resend.com/signup>. Free tier: 3,000 emails
       a month, 100 a day. Plenty.
-- [ ] Resend → Domains → Add domain → `example.com` → region closest to the
-      admin. Resend shows three DNS records (DKIM TXT, SPF TXT, MX on a
-      `send.` subdomain). Add them in Cloudflare → DNS, with the proxy
-      (orange cloud) **off** for each. Back in Resend, *Verify*. Usually
-      under a minute. <https://resend.com/domains>
+- [ ] Resend → Domains → Add domain → `projectconnectionsanta.org` → region
+      closest to the admin. Resend shows three DNS records (a DKIM TXT, an
+      SPF TXT and an MX, the last two on a `send` subdomain).
+      <https://resend.com/domains>
+- [ ] Namecheap → Domain List → *Manage* → **Advanced DNS** → add each
+      record exactly as Resend shows it. Host is the part before
+      `.projectconnectionsanta.org` (Namecheap adds the rest):
+      `resend._domainkey`, `send`, `send`. Leave TTL automatic.
+      <https://ap.www.namecheap.com/domains/list/>
+- [ ] Back in Resend, *Verify*. Namecheap DNS can take a few minutes to
+      propagate; if it says pending, wait five and try again.
 - [ ] Resend → API Keys → Create → name `supabase-dev`, permission
-      *Sending access*, domain `example.com`. Copy it once. Make a second
-      one named `supabase-prod`. <https://resend.com/api-keys>
+      *Sending access*, domain `projectconnectionsanta.org`. Copy it once.
+      Make a second one named `supabase-prod`. <https://resend.com/api-keys>
 
 ### 2. GitHub — one secret per environment — *Human*
 
@@ -368,7 +375,7 @@ deploy setup.
 | Input | Dev | Prod |
 |---|---|---|
 | target | `development` | `production` |
-| sender_email | `signin@example.com` | `signin@example.com` |
+| sender_email | `signin@projectconnectionsanta.org` | `signin@projectconnectionsanta.org` |
 | sender_name | `Sub for Santa` | `Sub for Santa` |
 | google | `keep` | `keep` |
 | confirm | *(blank)* first, then `apply` | *(blank)* first, then `apply` |
@@ -389,7 +396,8 @@ It is not `supabase config push`, and that command is still never run.
 
 - [ ] On the dev site, sign in with a **Gmail** address: the code arrives
       in the inbox (not spam) within a minute, from
-      "Sub for Santa <signin@example.com>", code in the subject line.
+      "Sub for Santa <signin@projectconnectionsanta.org>", code in the
+      subject line.
 - [ ] Same with an **Outlook / Hotmail** address.
 - [ ] The admin signs in on the live site with the address her Google
       account uses. She lands in the console: same account, same role.
