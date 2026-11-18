@@ -9,7 +9,7 @@ Three environments, three databases, and a different way into each.
 | Site | `http://localhost:3000` from `node server.js` | `https://dev.<pages-project>.pages.dev` | `https://<pages-project>.pages.dev` |
 | Database | Supabase CLI in Docker | Supabase project `wiobafdpmzzrzzqavjbf` | a **separate** Supabase project in its own organization, created by a human |
 | Data | `seed.sql` — three fake households | the same three fake households | real. Never seeded. |
-| Sign-in | emailed link → Mailpit; Google if configured | Google | Google |
+| Sign-in | emailed 6-digit code → Mailpit; Google if configured | emailed 6-digit code (once email §1–§4 below is done); Google as a second option until turned off | same as dev |
 | Deployed by | you, with `npm run dev` | GitHub Actions on every push to `dev` | GitHub Actions on every push to `main`. The review happens on the `dev` → `main` pull request, not at the deploy |
 | Who can change the database by hand | you | Alex, via Studio or the MCP | **nobody.** [Break-glass](break-glass.md) only |
 
@@ -125,8 +125,9 @@ Dev gets its own client so its test-user list stays apart from prod's.
 - [ ] Push (or merge) to `dev`. Actions → *Deploy dev* goes green, with
       "Apply migrations" before "Upload".
 - [ ] Open `https://dev.<pages-project>.pages.dev`. The page loads with no
-      console errors, and **no "Email me a sign-in link" form** — only
-      Google.
+      console errors. It offers whichever sign-in the project has switched
+      on: Google until the *Email sign-in* section below is done, the email
+      code after.
 - [ ] Sign in with Google once, then add the admin `profiles` row for that
       account (`supabase/README.md`). This project started empty: the
       first Deploy dev applied the migrations and nothing else. To see the
@@ -318,6 +319,106 @@ rather than quietly talking to dev.
   once it is transferred (decided 2026-10-16). Never an agent.
 - Every manual change to prod data is a dated line in `decisions.md`
   (`break-glass.md`).
+
+---
+
+## Email sign-in — *Human, once per project, then a workflow*
+
+Decided 2026-11-18: people sign in with a 6-digit code sent to their email.
+Google stays as a second button until it is switched off. The page offers
+whichever the project has on, so these steps can be done in any order
+relative to a deploy; nothing breaks in between.
+
+**Why a domain comes first.** Supabase's built-in mailer only delivers to
+the project's own team members. Real mail needs a mail service, and every
+mail service needs DNS records on a domain you control before it will send
+from it. `example.com` below stands for the one you register.
+
+### 1. Domain and mail service — *Human (David)*
+
+- [ ] Register the domain in Cloudflare Registrar (same account as Pages):
+      <https://dash.cloudflare.com/?to=/:account/domains/register>
+- [ ] Resend account: <https://resend.com/signup>. Free tier: 3,000 emails
+      a month, 100 a day. Plenty.
+- [ ] Resend → Domains → Add domain → `example.com` → region closest to the
+      admin. Resend shows three DNS records (DKIM TXT, SPF TXT, MX on a
+      `send.` subdomain). Add them in Cloudflare → DNS, with the proxy
+      (orange cloud) **off** for each. Back in Resend, *Verify*. Usually
+      under a minute. <https://resend.com/domains>
+- [ ] Resend → API Keys → Create → name `supabase-dev`, permission
+      *Sending access*, domain `example.com`. Copy it once. Make a second
+      one named `supabase-prod`. <https://resend.com/api-keys>
+
+### 2. GitHub — one secret per environment — *Human*
+
+- [ ] Settings → Environments → `development` → Environment secrets → add
+      `RESEND_API_KEY` = the `supabase-dev` key.
+- [ ] Same in `production` with the `supabase-prod` key.
+      <https://github.com/dwelch2344/secret-santa-platform/settings/environments>
+
+Everything else the workflow needs (`SUPABASE_ACCESS_TOKEN`,
+`SUPABASE_PROJECT_REF`, `SITE_URL`) is already in each environment from the
+deploy setup.
+
+### 3. Run the workflow — *Human clicks, the script does the rest*
+
+<https://github.com/dwelch2344/secret-santa-platform/actions/workflows/configure-auth.yml>
+→ *Run workflow*:
+
+| Input | Dev | Prod |
+|---|---|---|
+| target | `development` | `production` |
+| sender_email | `signin@example.com` | `signin@example.com` |
+| sender_name | `Sub for Santa` | `Sub for Santa` |
+| google | `keep` | `keep` |
+| confirm | *(blank)* first, then `apply` | *(blank)* first, then `apply` |
+
+- [ ] Dev, confirm blank: the log lists every field it would change. Read
+      it once. Nothing is written.
+- [ ] Dev, confirm `apply`. The log ends with "all verified by reading the
+      project back".
+- [ ] Prod, the same two runs.
+
+What the script sets, and the only things it sets: email sign-in on,
+codes instead of confirmation links, the template from
+`supabase/templates/magic_link.html`, Resend as the SMTP server, the site
+URL, and Google on or off. `scripts/configure-auth.js` is the full list.
+It is not `supabase config push`, and that command is still never run.
+
+### 4. Verify — *Human (the admin, ideally)*
+
+- [ ] On the dev site, sign in with a **Gmail** address: the code arrives
+      in the inbox (not spam) within a minute, from
+      "Sub for Santa <signin@example.com>", code in the subject line.
+- [ ] Same with an **Outlook / Hotmail** address.
+- [ ] The admin signs in on the live site with the address her Google
+      account uses. She lands in the console: same account, same role.
+      (Same email = same account; a different email would be a new, empty
+      one.)
+- [ ] A sponsor who signed in with Google before signs in with the same
+      email and still sees "My families".
+- [ ] If anything goes to spam: Resend → Emails shows delivery per
+      address; Resend → Domains should show all three records green.
+      Adding the DMARC record Resend suggests helps.
+
+### 5. Later: turn Google off — *Human*
+
+Once a week of codes has landed cleanly, re-run the workflow for each
+project with `google` = `off` and `confirm` = `apply`. The Google button
+disappears on the next page load; existing accounts keep working through
+email. Then the Google OAuth clients and their consent screens can be left
+alone or deleted.
+
+### Things that must stay true
+
+- The sign-in email never carries anything but the code, the one-tap link
+  and the site name. No household data, ever.
+- `RESEND_API_KEY` lives only in the two GitHub environments and in Resend.
+  Rotating it: new key in Resend, update the secret, re-run the workflow
+  with `apply`.
+- The workflow is the way hosted auth settings change, next to the
+  dashboard. `supabase config push` is still never run against a hosted
+  project.
 
 ---
 

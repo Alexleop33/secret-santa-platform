@@ -1,0 +1,87 @@
+# Switches a HOSTED Supabase project to email-code sign-in, from GitHub,
+# using the access token the deploy already holds. Run it by hand from the
+# Actions tab: pick the environment, type the sender address, and leave
+# "confirm" blank the first time to see what would change. Run it again with
+# confirm = apply to write.
+#
+# What it sets (and nothing else): email sign-in on, codes instead of
+# confirmations, the sign-in email from supabase/templates/magic_link.html,
+# Resend as the mail server, the site URL, and Google on or off. The exact
+# list is desiredAuthConfig() in scripts/configure-auth.js, and the script
+# reads the project back afterwards and fails if any field didn't take.
+#
+# This is not `supabase config push` and must never become it: that would
+# copy the whole local config.toml onto a live project. This touches
+# sixteen named fields and shows them to you first.
+#
+# Needs, in the chosen GitHub environment:
+#   secrets  SUPABASE_ACCESS_TOKEN (already there), RESEND_API_KEY (new)
+#   vars     SUPABASE_PROJECT_REF, SITE_URL (already there)
+name: Configure auth
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Which project
+        type: choice
+        options: [development, production]
+        required: true
+      sender_email:
+        description: "From address, on the domain verified in Resend (e.g. signin@example.com)"
+        type: string
+        required: true
+      sender_name:
+        description: From name
+        type: string
+        default: Sub for Santa
+      google:
+        description: Keep Google sign-in as a second option, or turn it off
+        type: choice
+        options: [keep, "off"]
+        default: keep
+      confirm:
+        description: 'Type "apply" to write. Anything else is a dry run that only shows the changes.'
+        type: string
+        default: ""
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.target }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check the environment has what this needs
+        env:
+          HAS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
+          HAS_RESEND: ${{ secrets.RESEND_API_KEY != '' }}
+          REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          SITE: ${{ vars.SITE_URL }}
+        run: |
+          missing=""
+          [ "$HAS_TOKEN" = true ]  || missing="$missing SUPABASE_ACCESS_TOKEN(secret)"
+          [ "$HAS_RESEND" = true ] || missing="$missing RESEND_API_KEY(secret)"
+          [ -n "$REF" ]            || missing="$missing SUPABASE_PROJECT_REF(var)"
+          [ -n "$SITE" ]           || missing="$missing SITE_URL(var)"
+          if [ -n "$missing" ]; then
+            echo "::error::The '${{ inputs.target }}' environment is missing:$missing — see docs/environments.md, email sign-in §3."
+            exit 1
+          fi
+
+      - name: ${{ inputs.confirm == 'apply' && 'Apply the auth settings' || 'Dry run — show what would change' }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          SENDER_EMAIL: ${{ inputs.sender_email }}
+          SENDER_NAME: ${{ inputs.sender_name }}
+          GOOGLE: ${{ inputs.google }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: node scripts/configure-auth.js

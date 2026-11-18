@@ -101,10 +101,15 @@ about to do, wait. Do not be helpful and proceed.
 ## Security rules, regardless of stack
 
 - **Never** roll our own auth, sessions, or password storage.
-- **Google sign-in, for everyone who signs in.** No passwords anywhere.
-  Email magic links are postponed, not rejected. Families never sign in at
-  all, and donors without a Google account are an open exclusion — see the
-  product repo's open questions. Decided 2026-10-11.
+- **Sign in with an emailed 6-digit code; Google as a second option.** No
+  passwords anywhere. Decided 2026-11-18, replacing "Google only"
+  (2026-10-11): Google's consent screen named the Supabase project's
+  domain and sponsors reported it as a scam, and a domain we own fixes
+  that for email in one step. The sign-in page asks the project which
+  providers are on and offers those, so Google can be switched off in the
+  dashboard with no deploy. Hosted auth settings change through the
+  "Configure auth" workflow or the dashboard, never `supabase config
+  push`. Families never sign in at all.
 - **RLS on every table from the first migration.** Default deny, then open
   specific paths. No table ships without a policy *and a test proving denial.*
 - **No payments, ever.** The app never handles money — no Stripe link, no
@@ -204,9 +209,9 @@ it as load-bearing, not as a report.
 - **RLS is not optional and not deferrable.** No table ships without a policy
   and a test proving the wrong user gets nothing back. A wrong policy looks
   exactly like a right one, which is why the test is the deliverable.
-- **Google sign-in.** No passwords stored, ever. Email magic links are
-  postponed, and families still have no login at all — the one-time form link
-  is an unsolved mechanism, not a decided one.
+- **Sign-in by emailed code, Google secondary.** No passwords stored,
+  ever. Changed 2026-11-18 from Google-only. Families still have no login
+  at all; they reach the form through a referral link.
 - **npm packages are allowed where they genuinely help.** Prefer what Node
   already has — `fetch`, `node:http`, `node:test` — because fewer moving
   parts is easier to read and easier to trust. But a well-chosen package
