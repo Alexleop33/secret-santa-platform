@@ -6,7 +6,7 @@ Three environments, three databases, and a different way into each.
 | | local | dev (demo site) | prod (live site) |
 |---|---|---|---|
 | Git | any branch | `dev` | `main` |
-| Site | `http://localhost:3000` from `node server.js` | `https://dev.<pages-project>.pages.dev` | `https://<pages-project>.pages.dev` |
+| Site | `http://localhost:3000` from `node server.js` | `https://dev.sub-for-santa.pages.dev` | `https://projectconnectionsanta.org` (the old `sub-for-santa.pages.dev` redirects there, fragment and all) |
 | Database | Supabase CLI in Docker | Supabase project `wiobafdpmzzrzzqavjbf` | a **separate** Supabase project in its own organization, created by a human |
 | Data | `seed.sql` — three fake households | the same three fake households | real. Never seeded. |
 | Sign-in | emailed 6-digit code → Mailpit; Google if configured | emailed 6-digit code (once email §1–§4 below is done); Google as a second option until turned off | same as dev |
@@ -294,7 +294,7 @@ Settings → Branches → Add rule (or Rulesets, same settings). **Exact values:
 `public/_headers` lists the prod API host in `connect-src`. Both are public
 by design and both are placeholders until the project exists. Once step 1 is
 done, open a PR into `dev` that fills in `TARGETS.prod` and the CSP host;
-`PROD_HOSTNAME` is already `sub-for-santa.pages.dev` and changes only if the
+`PROD_HOSTNAME` is `projectconnectionsanta.org` (since 2026-11-19) and changes only if the
 Pages project got a different name. Until that PR reaches `main`, the live
 site loads but refuses to start — it reports that prod isn't configured
 rather than quietly talking to dev.
@@ -319,6 +319,66 @@ rather than quietly talking to dev.
   once it is transferred (decided 2026-10-16). Never an agent.
 - Every manual change to prod data is a dated line in `decisions.md`
   (`break-glass.md`).
+
+---
+
+## The domain: `projectconnectionsanta.org` — *Human, once*
+
+Decided 2026-11-19. The live site answers at `https://projectconnectionsanta.org`.
+The old `sub-for-santa.pages.dev` keeps working: `public/redirect.js`, the
+first script on every page, swaps the host and keeps the path, query and
+`#fragment`, so referral links already sent out still land with their token.
+`www.` redirects to the bare domain the same way. The dev site stays at
+`dev.sub-for-santa.pages.dev`.
+
+### 1. Move DNS to Cloudflare — *Human (David)*
+
+Cloudflare Pages serves a bare domain only when the domain's DNS is on
+Cloudflare. Same account as Pages.
+
+- [ ] Cloudflare → Add a domain → `projectconnectionsanta.org` → Free plan.
+      It scans and imports the Namecheap records.
+      <https://dash.cloudflare.com/?to=/:account/add-site>
+- [ ] **Before changing nameservers:** in the imported DNS list, confirm the
+      three Resend records are there (`resend._domainkey` TXT, `send` TXT,
+      `send` MX) and the `_dmarc` TXT if added. Add any that are missing by
+      hand, proxy (orange cloud) **off**. If they are missing when the
+      nameservers switch, sign-in emails stop.
+- [ ] Namecheap → Domain List → Manage → Nameservers → *Custom DNS* → the two
+      Cloudflare nameservers shown on the Add-a-domain page.
+      <https://ap.www.namecheap.com/domains/list/>
+- [ ] Wait for Cloudflare to show the zone **Active** (usually under an
+      hour; it emails you).
+
+### 2. Attach the domain to Pages — *Human*
+
+- [ ] Workers & Pages → `sub-for-santa` → Custom domains → *Set up a custom
+      domain* → `projectconnectionsanta.org`. Cloudflare adds the record
+      itself. Repeat for `www.projectconnectionsanta.org`.
+- [ ] Both show **Active** with a certificate within a few minutes.
+- [ ] Open `https://projectconnectionsanta.org`: the live site, same content
+      as before. Open `https://sub-for-santa.pages.dev/browse`: it lands on
+      `https://projectconnectionsanta.org/browse`.
+
+### 3. Tell the services — *Human*
+
+- [ ] Supabase **prod** → Authentication → URL Configuration: Site URL
+      `https://projectconnectionsanta.org`; Redirect URLs add
+      `https://projectconnectionsanta.org/**`. Keep the pages.dev entries
+      for a week, then remove.
+- [ ] GitHub → Settings → Environments → `production` → variable
+      `SITE_URL` = `https://projectconnectionsanta.org`. (It only labels the
+      deployment and feeds the *Configure auth* workflow's `site_url`.)
+      <https://github.com/dwelch2344/secret-santa-platform/settings/environments>
+- [ ] If Google sign-in is still on: Google Cloud → the prod OAuth client →
+      Authorized JavaScript origins add `https://projectconnectionsanta.org`.
+- [ ] The email sender already matches: `signin@projectconnectionsanta.org`.
+
+### What the code change was
+
+`public/redirect.js` (new, loaded first on every page), `PROD_HOSTNAME` in
+`public/config.js`, and the tests for both. Nothing in the database, the
+headers, or the workflows names the hostname.
 
 ---
 
