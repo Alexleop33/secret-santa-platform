@@ -48,8 +48,8 @@ function renderPerson(member) {
   const heading = el("h3");
   heading.append(el("span", "person-label", personLabel(member)));
   const sizes = el("span", "sizes");
-  if (member.clothing_size) sizes.appendChild(el("span", "size", member.clothing_size));
-  if (member.shoe_size) sizes.appendChild(el("span", "size", member.shoe_size));
+  if (member.clothing_size) sizes.appendChild(el("span", "size", `Clothing: ${member.clothing_size}`));
+  if (member.shoe_size) sizes.appendChild(el("span", "size", `Shoes: ${member.shoe_size}`));
   heading.appendChild(sizes);
   card.appendChild(heading);
   const own = items.filter((i) => i.member_id === member.id);

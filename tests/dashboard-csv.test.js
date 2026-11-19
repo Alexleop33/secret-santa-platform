@@ -25,7 +25,7 @@ test("the CSV export carries the household's first name and provider", () => {
 
 test("the CSV export references none of the still-excluded contact fields", () => {
   const block = exportBlock();
-  for (const forbidden of ["email", "phone", "contact_is", "submitter_first_name", "primary_channel", "family_note"]) {
+  for (const forbidden of ["email", "phone", "contact_is", "submitter_first_name", "primary_channel", "family_note", "client_name"]) {
     assert.ok(!block.includes(forbidden), `export handler must not reference ${forbidden}`);
   }
 });

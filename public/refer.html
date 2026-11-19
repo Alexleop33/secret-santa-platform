@@ -54,7 +54,7 @@
         </section>
 
         <section class="card">
-          <h2><span class="muted">4</span> Who is in the household</h2>
+          <h2><span class="muted">4</span> Kids in the Household. Adults optional.</h2>
           <p class="muted small">One block per person. Make sure size information is correct.</p>
           <div id="members" class="stack"></div>
           <div class="form-actions">
@@ -93,7 +93,16 @@
         </section>
 
         <section class="card">
-          <h2><span class="muted">6</span> Provider</h2>
+          <h2><span class="muted">6</span> Project Connection client</h2>
+          <label class="field">
+            <span>Client Name (Project Connection)</span>
+            <input type="text" name="client_name" maxlength="80" required placeholder="e.g. Jamie Smith" />
+            <span class="hint">The name Project Connection uses for this client in their own records — first and last name. Private; only the coordinator sees this.</span>
+          </label>
+        </section>
+
+        <section class="card">
+          <h2><span class="muted">7</span> Provider</h2>
           <label class="field">
             <span>Who referred you?</span>
             <input type="text" name="referral_source" maxlength="120" placeholder="name of therapist, case manager, etc" />
@@ -101,7 +110,7 @@
         </section>
 
         <section class="card">
-          <h2><span class="muted">7</span> Consent</h2>
+          <h2><span class="muted">8</span> Consent</h2>
           <label class="check"><input type="checkbox" name="is_guardian" required /> <span>I am the parent/guardian of the children listed.</span></label>
           <label class="check"><input type="checkbox" name="consent_share" checked required /> <span>By submitting this form I agree to share my story and information with potential donors (names removed).</span></label>
         </section>
@@ -123,14 +132,18 @@
           <label class="field">
             <span>Who</span>
             <select name="role" required>
-              <option value="boy">Boy</option>
-              <option value="girl">Girl</option>
-              <option value="child">Child</option>
-              <option value="mom">Mom</option>
-              <option value="dad">Dad</option>
-              <option value="grandmother">Grandmother</option>
-              <option value="grandfather">Grandfather</option>
-              <option value="adult">Another adult</option>
+              <optgroup label="Kids">
+                <option value="boy">Boy</option>
+                <option value="girl">Girl</option>
+                <option value="child">Child</option>
+              </optgroup>
+              <optgroup label="Adults (optional)">
+                <option value="mom">Mom</option>
+                <option value="dad">Dad</option>
+                <option value="grandmother">Grandmother</option>
+                <option value="grandfather">Grandfather</option>
+                <option value="adult">Another adult</option>
+              </optgroup>
             </select>
           </label>
           <label class="field age-field">
@@ -151,8 +164,8 @@
           </label>
         </div>
         <div class="form-row">
-          <label class="field"><span>Needs</span><input type="text" name="needs" maxlength="200" placeholder="Winter coat, jeans" /><span class="hint">Separate items with commas.</span></label>
-          <label class="field"><span>Would love</span><input type="text" name="would_love" maxlength="200" placeholder="Chapter books" /></label>
+          <label class="field"><span>Needs</span><input type="text" name="needs" maxlength="200" placeholder="Winter coat, jeans" /><span class="hint">Everyday essentials this person needs. Separate items with commas.</span></label>
+          <label class="field"><span>Would love</span><input type="text" name="would_love" maxlength="200" placeholder="Chapter books" /><span class="hint">A toy, book, or something fun they'd enjoy. Separate items with commas.</span></label>
         </div>
         <div class="notice notice-amber small hidden" data-warning-for="member"></div>
         <div class="form-actions">

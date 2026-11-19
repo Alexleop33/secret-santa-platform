@@ -92,8 +92,8 @@ function renderClaim(claim) {
     const groupHead = el("div", "claim-member-head");
     const label = el("span", "person-label", personLabel(m));
     const sizes = el("span", "sizes");
-    if (m.clothing_size) sizes.appendChild(el("span", "size", m.clothing_size));
-    if (m.shoe_size) sizes.appendChild(el("span", "size", m.shoe_size));
+    if (m.clothing_size) sizes.appendChild(el("span", "size", `Clothing: ${m.clothing_size}`));
+    if (m.shoe_size) sizes.appendChild(el("span", "size", `Shoes: ${m.shoe_size}`));
     groupHead.append(label, sizes);
     group.appendChild(groupHead);
 

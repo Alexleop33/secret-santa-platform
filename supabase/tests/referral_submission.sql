@@ -3,7 +3,7 @@
 -- path refuses: used, expired, unknown, no consent, identifying text. And
 -- an anonymous caller can read none of it back afterwards.
 begin;
-select plan(17);
+select plan(18);
 
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-000000000001', 'admin@example.test');
@@ -34,6 +34,7 @@ create temporary table good as select jsonb_build_object(
   'summary', 'Household of 3 — mom & two kids, ages 4 and 9',
   'story', 'Work hours were cut in the autumn. Warm clothes first, then one thing each to open.',
   'email', 'Family.Test@example.test',
+  'client_name', 'Jordan Rivera',
   'consent_wish_list', true,
   'is_guardian', true,
   'consent_story', true,
@@ -82,6 +83,14 @@ select throws_ok(
   'P0001',
   'This link is not recognised.',
   'an unknown link is refused'
+);
+
+-- No client name, no referral.
+select throws_ok(
+  format('select submit_referral(%L, (select (payload - ''client_name'') from good))', (select token from link_c)),
+  'P0001',
+  'Please give the Project Connection client''s first and last name.',
+  'a missing client name is refused'
 );
 
 -- No consent, no referral.

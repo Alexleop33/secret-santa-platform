@@ -1546,3 +1546,138 @@ input[type="color"] {
   text-decoration: none;
   cursor: default;
 }
+
+/* ---------- Printable wish list (D5 print) ---------- */
+
+.print-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 16px;
+  background: var(--paper);
+  border: 1px solid var(--green-300);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.print-banner-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--green-xmas-light);
+  color: var(--green-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.print-banner-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.print-banner button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.print-banner-text {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.print-banner-text p {
+  margin: 0;
+}
+
+.print-banner-sub {
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+
+.list-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px 12px;
+  margin-bottom: 4px;
+}
+
+.tick-box {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  margin-right: 8px;
+  flex: none;
+  vertical-align: middle;
+}
+
+.bag-tags-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.bag-tag {
+  flex: 1;
+  border: 1.5px dashed var(--ink-3);
+  border-radius: var(--radius-sm);
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.bag-tag div:first-child {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  line-height: 1.1;
+}
+
+.bag-tag-sub {
+  font-size: 0.78rem;
+  color: var(--ink-3);
+}
+
+.print-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 0.82rem;
+  color: var(--ink-3);
+}
+
+@media print {
+  .site-header,
+  .site-nav,
+  .brand-bar,
+  .print-banner,
+  .confirmed-mark,
+  .confirmed-gifts,
+  .form-actions,
+  .drop-contact {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .card {
+    box-shadow: none;
+    border-color: #000;
+  }
+
+  .bag-tag,
+  .tick-box {
+    border-color: #000;
+  }
+}

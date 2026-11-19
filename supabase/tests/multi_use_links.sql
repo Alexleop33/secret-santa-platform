@@ -24,6 +24,7 @@ grant select on link_two, link_one to anon;
 create temporary table base as select jsonb_build_object(
   'summary', 'Household of 2 — one adult, one child',
   'story', 'Short on winter things this year.',
+  'client_name', 'Jordan Rivera',
   'consent_wish_list', true,
   'is_guardian', true,
   'members', jsonb_build_array(jsonb_build_object('role', 'girl', 'age', 6, 'needs', 'Coat'))

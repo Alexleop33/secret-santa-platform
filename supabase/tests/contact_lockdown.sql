@@ -10,6 +10,7 @@ values (sha256(convert_to('lockdown-token', 'UTF8')), now() + interval '1 day', 
 create temporary table base as select jsonb_build_object(
   'summary', 'Household of 2 — one adult, one child',
   'story', 'Hours were cut this autumn.',
+  'client_name', 'Jordan Rivera',
   'consent_wish_list', true,
   'is_guardian', true,
   'members', jsonb_build_array(jsonb_build_object('role', 'girl', 'age', 6, 'needs', 'Coat'))
