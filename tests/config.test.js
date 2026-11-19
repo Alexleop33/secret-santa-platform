@@ -7,7 +7,7 @@ import { pickTarget, PROD_HOSTNAME } from "../public/config.js";
 
 // Most tests pass the prod hostname in explicitly so they read clearly; the
 // last one checks the real constant from config.js.
-const PROD = "sub-for-santa.pages.dev";
+const PROD = "projectconnectionsanta.org";
 
 test("localhost and 127.0.0.1 resolve to local", () => {
   assert.equal(pickTarget("localhost", undefined, PROD), "local");
@@ -33,6 +33,7 @@ test("everything near prod, but not prod, resolves to dev", () => {
   assert.equal(pickTarget(`www.${PROD}`, undefined, PROD), "dev");
   assert.equal(pickTarget(`pr-12.${PROD}`, undefined, PROD), "dev");
   assert.equal(pickTarget("dev.sub-for-santa.pages.dev", undefined, PROD), "dev");
+  assert.equal(pickTarget("sub-for-santa.pages.dev", undefined, PROD), "dev"); // the old host; redirect.js moves it before this runs
 });
 
 test("unknown hosts, empty hosts and missing hosts resolve to dev", () => {
@@ -42,7 +43,7 @@ test("unknown hosts, empty hosts and missing hosts resolve to dev", () => {
 });
 
 test("while the prod hostname is unset, nothing resolves to prod", () => {
-  assert.equal(pickTarget("sub-for-santa.pages.dev", undefined, null), "dev");
+  assert.equal(pickTarget("projectconnectionsanta.org", undefined, null), "dev");
   assert.equal(pickTarget("null", undefined, null), "dev");
 });
 
