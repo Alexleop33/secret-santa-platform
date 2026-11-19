@@ -405,9 +405,19 @@ It is not `supabase config push`, and that command is still never run.
       one.)
 - [ ] A sponsor who signed in with Google before signs in with the same
       email and still sees "My families".
-- [ ] If anything goes to spam: Resend → Emails shows delivery per
-      address; Resend → Domains should show all three records green.
-      Adding the DMARC record Resend suggests helps.
+- [ ] If anything goes to spam (it did on 2026-11-19, from both projects):
+      1. Add a DMARC record at Namecheap: TXT, host `_dmarc`, value
+         `v=DMARC1; p=none; rua=mailto:signin@projectconnectionsanta.org`.
+         Gmail and Outlook treat a domain without one as less trustworthy.
+      2. Make sure the email carries no links (the template has none since
+         2026-11-19; re-run the *Configure auth* workflow with `apply` for
+         both projects so the hosted copy matches).
+      3. Resend → Domains → the domain → check *Click tracking* and *Open
+         tracking* are **off**; tracking rewrites links through Resend's
+         domain, another mismatch.
+      4. On the test accounts, mark the message *Not spam* and add the
+         sender to contacts. New domains earn trust by being opened.
+      Resend → Emails shows delivery per address if anything is missing.
 
 ### 5. Later: turn Google off — *Human*
 
