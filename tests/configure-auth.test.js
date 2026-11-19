@@ -10,10 +10,11 @@ import { desiredAuthConfig } from "../scripts/configure-auth.js";
 const template = fs.readFileSync(path.join(import.meta.dirname, "..", "supabase", "templates", "magic_link.html"), "utf8");
 const good = { siteUrl: "https://sub-for-santa.pages.dev", resendApiKey: "re_test_key", senderEmail: "signin@example.com", senderName: "Sub for Santa", google: "keep" };
 
-test("the real template carries the code, the link and the site", () => {
+test("the real template carries the code and nothing a spam filter dislikes", () => {
   assert.match(template, /\{\{ \.Token \}\}/);
-  assert.match(template, /\{\{ \.ConfirmationURL \}\}/);
-  assert.match(template, /\{\{ \.SiteURL \}\}/);
+  // No links: a link to a domain other than the sender's got the first
+  // version filed as spam (2026-11-19). The page signs in by code.
+  assert.doesNotMatch(template, /<a\s|href=|https?:\/\//i, "no links in the sign-in email");
   assert.doesNotMatch(template, /<script|<img/i, "no scripts or images in a sign-in email");
 });
 
