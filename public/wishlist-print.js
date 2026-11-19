@@ -20,6 +20,24 @@ function el(tag, className, text) {
   return node;
 }
 
+// The printer icon on every print button: the donor's banner and the
+// coordinator's roster and picker. Decorative, so hidden from screen
+// readers; the button's own text says what it does.
+export function printerIcon() {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "1.8");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", "M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z");
+  svg.appendChild(path);
+  return svg;
+}
+
 function personLabel(m) {
   const base = ROLE_LABELS[m.role] ?? m.role;
   return CHILD_ROLES.has(m.role) && m.age != null ? `${base}, ${m.age}` : base;

@@ -3,7 +3,7 @@
 // There is no family contact card here and never will be: gifts go to the
 // drop-off point, and the coordinator sorts them by household.
 import { supabase } from "./auth.js";
-import { renderWishList } from "./wishlist-print.js";
+import { renderWishList, printerIcon } from "./wishlist-print.js";
 
 function img(file, className) {
   const node = document.createElement("img");
@@ -11,21 +11,6 @@ function img(file, className) {
   node.alt = "";
   node.className = className;
   return node;
-}
-
-function printerIcon() {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "none");
-  svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", "1.8");
-  svg.setAttribute("stroke-linecap", "round");
-  svg.setAttribute("stroke-linejoin", "round");
-  svg.setAttribute("aria-hidden", "true");
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", "M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z");
-  svg.appendChild(path);
-  return svg;
 }
 
 const root = document.getElementById("confirmed");

@@ -41,12 +41,16 @@ const IDENTIFYING = [
 
 const squash = (text) => text.replace(/\s+/g, " ").trim();
 
-function printFamilyBlock() {
-  const start = dashboardSource.indexOf("async function printFamily(");
-  assert.ok(start !== -1, "expected dashboard.js to define printFamily");
+// The text of a top-level function in dashboard.js, from its first line
+// to the closing brace at the start of a line.
+function functionBlock(name) {
+  const start = dashboardSource.search(new RegExp(`(async )?function ${name}\\(`));
+  assert.ok(start !== -1, `expected dashboard.js to define ${name}`);
   const end = dashboardSource.indexOf("\n}\n", start);
   return dashboardSource.slice(start, end);
 }
+
+const printFamiliesBlock = () => functionBlock("printFamilies");
 
 // The argument object of the first `name({ ... })` call in `source`.
 function callArgument(source, name) {
@@ -71,33 +75,72 @@ test("the printed page mentions no identifying field", () => {
   assert.doesNotMatch(printSource, /\bphone\b/, "wishlist-print.js must not reference a bare phone");
 });
 
-test("the Print button copies three named fields out of the roster row, never the row", () => {
-  assert.equal(callArgument(dashboardSource, "printFamily"), "{ id: h.id, refCode: h.ref_code, summary: h.summary }");
-  assert.equal((dashboardSource.match(/printFamily\(/g) ?? []).length, 2, "expected one definition and one call of printFamily");
+test("every print button hands over household ids, never a roster row", () => {
+  // The definition's parameter, the roster row's button, the picker.
+  const allowed = new Set(["ids", "[h.id]", "[...selected]"]);
+  const calls = [...dashboardSource.matchAll(/printFamilies\(([^,)]*)/g)].map((m) => m[1].trim());
+  assert.ok(calls.includes("[h.id]"), "expected the roster's Print button to call printFamilies([h.id], …)");
+  for (const argument of calls) {
+    assert.ok(allowed.has(argument), `printFamilies must be handed ids, got: ${argument}`);
+  }
 });
 
 test("the dashboard hands renderWishList named values only", () => {
   assert.equal(
-    callArgument(printFamilyBlock(), "renderWishList"),
-    '{ refCode: family.refCode, members, items, drop, copy: "coordinator", summary: family.summary }',
+    callArgument(printFamiliesBlock(), "renderWishList"),
+    "{ refCode: family.refCode, members: members.filter((m) => m.household_id === family.id), " +
+      "items: items.filter((i) => i.household_id === family.id), drop, " +
+      'copy: "coordinator", summary: family.summary, }',
   );
 });
 
-test("the dashboard fetches members and wish items by named columns", () => {
-  const block = printFamilyBlock();
-  const members = block.match(/\.from\("household_members"\)\s*\.select\("([^"]*)"\)/);
-  const items = block.match(/\.from\("wish_items"\)\s*\.select\("([^"]*)"\)/);
-  assert.ok(members && items, "expected printFamily to select from household_members and wish_items");
-  assert.equal(members[1], "id, role, age, clothing_size, shoe_size");
-  assert.equal(items[1], "member_id, kind, label");
+test("the print path reads households, members and wish items by named columns", () => {
+  const block = printFamiliesBlock();
+  const select = (table) => block.match(new RegExp(`\\.from\\("${table}"\\)\\s*\\.select\\("([^"]*)"\\)`))?.[1];
+  assert.equal(select("households"), "id, ref_code, summary, status");
+  assert.equal(select("household_members"), "id, household_id, role, age, clothing_size, shoe_size");
+  assert.equal(select("wish_items"), "household_id, member_id, kind, label");
 });
 
-test("the dashboard's print code mentions no identifying field and logs nothing", () => {
-  const block = printFamilyBlock();
+test("the database decides which families are approved, not the page", () => {
+  assert.match(printFamiliesBlock(), /found\.filter\(\(row\) => row\.status === "live"\)/);
+});
+
+test("the print path mentions no identifying field, never reads the roster's rows, and logs nothing", () => {
+  const block = printFamiliesBlock();
   for (const field of [...IDENTIFYING, "contactOf", "console."]) {
-    assert.ok(!block.includes(field), `printFamily must not reference ${field}`);
+    assert.ok(!block.includes(field), `printFamilies must not reference ${field}`);
   }
-  assert.doesNotMatch(block, /\bemail\b|\bphone\b/, "printFamily must not reference an email or phone");
+  assert.doesNotMatch(block, /\bemail\b|\bphone\b/, "printFamilies must not reference an email or phone");
+  // `households` the roster array, as opposed to the "households" table.
+  assert.doesNotMatch(block, /(?<!")\bhouseholds\b/, "printFamilies must not read the roster's rows");
+});
+
+test("the picker copies four named fields per family out of the roster, never a name", () => {
+  const block = functionBlock("approvedFamilies");
+  const copied = block.match(/\.map\(\(h\) => \((\{[^}]*\})\)\)/);
+  assert.ok(copied, "expected approvedFamilies to copy fields with .map((h) => ({ ... }))");
+  assert.equal(squash(copied[1]), "{ id: h.id, refCode: h.ref_code, summary: h.summary, status: shownStatus(h) }");
+  for (const field of [...IDENTIFYING, "contactOf", "console."]) {
+    assert.ok(!block.includes(field), `approvedFamilies must not reference ${field}`);
+  }
+});
+
+test("the picker lists approved families only", () => {
+  assert.match(functionBlock("approvedFamilies"), /\.filter\(\(h\) => PRINTABLE\.has\(shownStatus\(h\)\)\)/);
+});
+
+test("a picker row shows number, summary and status, nothing else", () => {
+  const block = functionBlock("pickerRow");
+  const used = new Set([...block.matchAll(/family\.(\w+)/g)].map((m) => m[1]));
+  assert.deepEqual([...used].sort(), ["id", "refCode", "status", "summary"]);
+});
+
+test("the picker opens with nothing ticked", () => {
+  const start = dashboardSource.indexOf("openPicker.onclick = () => {");
+  assert.ok(start !== -1, "expected an openPicker.onclick handler");
+  const handler = dashboardSource.slice(start, dashboardSource.indexOf("\n};", start));
+  assert.match(handler, /selected = new Set\(\);/);
 });
 
 test("only approved families get a Print button", () => {
