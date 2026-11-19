@@ -39,14 +39,61 @@
           <section class="card">
             <div class="pick-top">
               <h2>Roster</h2>
-              <button type="button" class="btn btn-outline btn-sm" id="export">Export roster (CSV)</button>
+              <div class="roster-actions">
+                <button type="button" class="btn btn-outline btn-sm" id="open-picker">Print wish lists</button>
+                <button type="button" class="btn btn-outline btn-sm" id="export">Export roster (CSV)</button>
+              </div>
             </div>
-            <p class="muted small">Every household and every pending referral in one table. The export is the same table as a file — it carries name and provider, nothing else from a family's contact details.</p>
+            <p class="muted small">Every household and every pending referral in one table. The export is the same table as a file — it carries name and provider, nothing else from a family's contact details. Print wish lists gives each family its own page, ready for shopping or sorting gifts at drop-off.</p>
+            <p class="notice notice-red hidden" id="print-error" role="alert"></p>
             <div id="roster"><p class="muted">Loading…</p></div>
           </section>
         </main>
       </div>
     </div>
+
+    <!-- The "Print wish lists" picker (Epic #30). A native <dialog>: opened
+         with showModal(), it dims the page behind it, keeps keyboard focus
+         inside, and closes on Escape without any code of ours. Shows
+         family number, summary and status only, never a name. -->
+    <dialog class="picker" id="picker" aria-labelledby="picker-title">
+      <div class="picker-top">
+        <div class="picker-head">
+          <h2 id="picker-title">Print wish lists</h2>
+          <button type="button" class="picker-close" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <p class="picker-intro">Each family prints on its own page: sizes, the wish list, and a box to tick as each gift comes in.</p>
+        <div class="picker-tools">
+          <label class="picker-search">
+            Find a family
+            <input type="text" id="picker-search" inputmode="numeric" autocomplete="off" placeholder="Family number, e.g. 14" autofocus />
+          </label>
+          <div class="picker-quick" role="group" aria-label="Quick select">
+            <button type="button" class="btn btn-outline btn-sm" data-pick="sponsored">All sponsored</button>
+            <button type="button" class="btn btn-outline btn-sm" data-pick="live">Needs a sponsor</button>
+            <button type="button" class="btn btn-outline btn-sm" data-pick="all">All</button>
+            <button type="button" class="btn btn-outline btn-sm" data-pick="clear">Clear</button>
+          </div>
+        </div>
+      </div>
+      <fieldset class="picker-list">
+        <legend>Approved families</legend>
+        <div class="picker-rows" id="picker-rows"></div>
+        <p class="picker-empty hidden" id="picker-empty"></p>
+      </fieldset>
+      <div class="picker-foot">
+        <span class="picker-count" role="status" id="picker-count">No families selected</span>
+        <button type="button" class="btn btn-outline" data-close>Cancel</button>
+        <button type="button" class="btn btn-green" id="picker-print" disabled><span id="picker-print-label">Print 0 families</span></button>
+      </div>
+    </dialog>
+
+    <!-- Empty until a Print button fills it with one or more families'
+         wish lists. Invisible on screen; when printing, it's the only thing
+         on the page (see .print-root in styles.css). -->
+    <div class="print-root page" id="print-root"></div>
 
     <script src="/redirect.js"></script>
     <script src="/env.js"></script>
