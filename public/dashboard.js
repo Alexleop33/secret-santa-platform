@@ -9,11 +9,18 @@
 import { supabase } from "./auth.js";
 import { mountConsole, requireSession, formatDate } from "./console.js";
 import { toCsv, downloadCsv } from "./csv.js";
+import { renderWishList } from "./wishlist-print.js";
 
 const root = document.getElementById("dashboard-root");
 const tiles = document.getElementById("tiles");
 const roster = document.getElementById("roster");
 const attention = document.getElementById("attention");
+const printRoot = document.getElementById("print-root");
+const printError = document.getElementById("print-error");
+
+// Approved families are the only ones with a wish list worth printing.
+// Pending, rejected and withdrawn rows get no Print button.
+const PRINTABLE = new Set(["live", "sponsored", "delivered"]);
 
 let households = [];
 let claims = [];
@@ -132,12 +139,74 @@ function renderRoster() {
     row.insertCell().appendChild(el("span", `pill ${cls}`, label));
     row.insertCell().textContent = sponsorOf(h) || "—";
     row.insertCell().textContent = new Date(h.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    const buttons = el("div", "cell-actions");
+    if (PRINTABLE.has(shownStatus(h))) {
+      const print = el("button", "btn btn-outline btn-sm", "Print");
+      print.type = "button";
+      print.setAttribute("aria-label", `Print the wish list for family ${h.ref_code}`);
+      // Three named fields leave the row, never `h` itself: the row also
+      // carries the family's first name and provider.
+      print.onclick = () => printFamily({ id: h.id, refCode: h.ref_code, summary: h.summary }, print);
+      buttons.appendChild(print);
+    }
     const open = el("a", "btn btn-outline btn-sm", h.status === "pending_review" ? "Review" : "Open");
     open.href = `/queue.html?select=${encodeURIComponent(h.id)}`;
-    row.insertCell().appendChild(open);
+    buttons.appendChild(open);
+    row.insertCell().appendChild(buttons);
   }
   roster.appendChild(table);
 }
+
+// One family's coordinator copy. `family` is { id, refCode, summary },
+// copied by name from the roster row — never the row itself, which also
+// carries the family's first name and provider (household_contacts).
+// Members and wish items are fetched with named columns. Admin-only by
+// RLS: anyone else gets zero rows back, whatever this button does.
+async function printFamily(family, button) {
+  printError.classList.add("hidden");
+  button.disabled = true;
+  try {
+    const [{ data: members, error: membersError }, { data: items, error: itemsError }, { data: details }] = await Promise.all([
+      supabase.from("household_members").select("id, role, age, clothing_size, shoe_size").eq("household_id", family.id).order("position"),
+      supabase.from("wish_items").select("member_id, kind, label").eq("household_id", family.id).order("position"),
+      supabase.rpc("drop_off_details"),
+    ]);
+    const failed = membersError ?? itemsError;
+    if (failed) {
+      showPrintError(`Couldn't load the wish list for family ${family.refCode}: ${failed.message}`);
+      return;
+    }
+    // Every referral has at least one person, so no rows means RLS refused
+    // the read — usually a sign-in that expired since the page loaded.
+    if (!members?.length) {
+      showPrintError(`Couldn't load the wish list for family ${family.refCode}. Reload the page and sign in again.`);
+      return;
+    }
+    const drop = Array.isArray(details) ? details[0] : details;
+    printRoot.replaceChildren(
+      renderWishList({ refCode: family.refCode, members, items, drop, copy: "coordinator", summary: family.summary }),
+    );
+    document.body.classList.add("printing-wishlist");
+    window.print();
+  } finally {
+    button.disabled = false;
+  }
+}
+
+// The message sits above the roster, so a coordinator who clicked Print
+// far down the list would never see it without the scroll.
+function showPrintError(message) {
+  printError.textContent = message;
+  printError.classList.remove("hidden");
+  printError.scrollIntoView({ block: "center" });
+}
+
+// When the print dialog closes — printed or cancelled — put the dashboard
+// back exactly as it was.
+window.addEventListener("afterprint", () => {
+  document.body.classList.remove("printing-wishlist");
+  printRoot.replaceChildren();
+});
 
 // The export. Pending rows included (the handbook flagged their absence as
 // a gap). Name and provider are allowed here by name only (CLAUDE.md,

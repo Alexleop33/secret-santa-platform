@@ -1655,6 +1655,41 @@ input[type="color"] {
   color: var(--ink-3);
 }
 
+/* Coordinator copy only (Epic #30): the "Coordinator copy" stamp and the
+   family heading that the donor's page draws for itself. */
+.coord-copy-stamp {
+  text-align: right;
+  font-size: 0.82rem;
+  color: var(--ink-3);
+  padding-bottom: 8px;
+  margin: 0 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.coord-head {
+  margin-bottom: 16px;
+}
+
+.coord-head h1 {
+  margin: 0 0 4px;
+}
+
+.coord-head p {
+  margin: 0;
+}
+
+/* The roster's Print and Open buttons, side by side. */
+.cell-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+/* Where the dashboard builds a coordinator copy. Never shown on screen. */
+.print-root {
+  display: none;
+}
+
 @media print {
   .site-header,
   .site-nav,
@@ -1679,5 +1714,22 @@ input[type="color"] {
   .bag-tag,
   .tick-box {
     border-color: #000;
+  }
+
+  /* A long wish list flows onto a second sheet, but one person's sizes
+     and items are never split across the break (decided 2026-11-18). */
+  .wish-person {
+    break-inside: avoid;
+  }
+
+  /* Dashboard: only after a roster row's Print button is clicked does the
+     page swap to the coordinator copy. Pressing Cmd-P on its own still
+     prints the dashboard. */
+  body.printing-wishlist .console {
+    display: none !important;
+  }
+
+  body.printing-wishlist .print-root {
+    display: block;
   }
 }

@@ -42,11 +42,17 @@
               <button type="button" class="btn btn-outline btn-sm" id="export">Export roster (CSV)</button>
             </div>
             <p class="muted small">Every household and every pending referral in one table. The export is the same table as a file — it carries name and provider, nothing else from a family's contact details.</p>
+            <p class="notice notice-red hidden" id="print-error" role="alert"></p>
             <div id="roster"><p class="muted">Loading…</p></div>
           </section>
         </main>
       </div>
     </div>
+
+    <!-- Empty until a roster row's Print button fills it with one family's
+         wish list. Invisible on screen; when printing, it's the only thing
+         on the page (see .print-root in styles.css). -->
+    <div class="print-root page" id="print-root"></div>
 
     <script src="/redirect.js"></script>
     <script src="/env.js"></script>
