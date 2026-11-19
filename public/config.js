@@ -15,10 +15,10 @@
 // on every machine. RLS, not the key, is what protects the data.
 
 // The one hostname that is the live site. Exact match only — "www." in
-// front or anything after it is a different host, and goes to dev. If the
-// Cloudflare Pages project ends up with a different name, this is the one
-// line to change (docs/environments.md).
-export const PROD_HOSTNAME = "sub-for-santa.pages.dev";
+// front or anything after it is a different host, and goes to dev. The
+// old address (sub-for-santa.pages.dev) and "www." never reach this code:
+// redirect.js, loaded first on every page, sends them here.
+export const PROD_HOSTNAME = "projectconnectionsanta.org";
 
 const TARGETS = {
   local: {

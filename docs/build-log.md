@@ -437,6 +437,21 @@ own words, you understand the slice.
   does, and the page asks. That's why flipping a provider is a dashboard
   (or workflow) change and not a release.
 
+### 27. The live site moves to projectconnectionsanta.org — 2026-11-19
+
+- The domain bought for sending sign-in emails becomes the site's address
+  too. One name on flyers, on the phone and in the inbox.
+- The old `sub-for-santa.pages.dev` can't be redirected at Cloudflare (it
+  isn't our zone), so the page does it: `redirect.js`, a plain script
+  loaded before anything else, swaps the host and keeps path, query and
+  fragment. The fragment is the point: referral tokens ride in `#t=…`, a
+  server never sees a fragment, and the links are already out in the
+  world. `www.` folds into the bare domain the same way.
+- `PROD_HOSTNAME` is the new domain and nothing else. The old host never
+  reaches `config.js`, so there is no "list of prod hosts" to maintain.
+- **Say it back:** a redirect that has to keep the `#fragment` has to
+  happen in the browser, because the fragment never leaves it.
+
 ## Rebalancing into Alex's repos later
 
 Stories normally live in `Alexleop33/secret-santa-product` and PRs close
