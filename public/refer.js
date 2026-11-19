@@ -189,6 +189,7 @@ function readForm() {
     consent_wish_list: form.elements.consent_share.checked,
     consent_story: form.elements.consent_share.checked,
     first_name: form.elements.first_name.value.trim(),
+    client_name: form.elements.client_name.value.trim(),
     email,
     phone,
     primary_channel: email && phone ? form.elements.primary_channel.value : email ? "email" : "phone",
@@ -224,7 +225,7 @@ form.onsubmit = async (event) => {
     return;
   }
 
-  const texts = [referral.summary, referral.story, referral.coordinator_note, referral.first_name, referral.referral_source, ...referral.members.flatMap((m) => [m.needs, m.would_love, m.clothing_size, m.shoe_size])];
+  const texts = [referral.summary, referral.story, referral.coordinator_note, referral.first_name, referral.client_name, referral.referral_source, ...referral.members.flatMap((m) => [m.needs, m.would_love, m.clothing_size, m.shoe_size])];
   const blocking = texts.flatMap((text) => problemsIn(text).blocking);
   if (blocking.length) {
     showSubmitError(`Please take out ${[...new Set(blocking)].join(" and ")} before submitting. The coordinator reaches you through step 4.`);

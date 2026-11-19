@@ -11,6 +11,7 @@ values (sha256(convert_to('names-token', 'UTF8')), now() + interval '1 day', 5);
 
 create temporary table base as select jsonb_build_object(
   'summary', 'Household of 2 — one adult, one child',
+  'client_name', 'Jordan Rivera',
   'consent_wish_list', true,
   'is_guardian', true,
   'email', 'helper@example.test',
