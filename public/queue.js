@@ -190,6 +190,9 @@ function renderDetail(household) {
   privateCard.appendChild(
     el("p", null, contact ? `${describeContact(contact)} Never shown to sponsors.` : "No contact on file (it is deleted on rejection)."),
   );
+  if (contact?.client_name) {
+    privateCard.appendChild(el("p", "muted small", `Project Connection client: ${contact.client_name}.`));
+  }
   if (contact?.referral_source) {
     privateCard.appendChild(el("p", "muted small", `Referred by: ${contact.referral_source}.`));
   }
@@ -339,7 +342,7 @@ async function load() {
     .select(
       "id, ref_code, summary, story, status, referred_on, consent_wish_list, consent_story, admin_note, submitter_label, family_note, " +
         "household_members ( id, position, role, age, clothing_size, shoe_size, wish_items ( id, kind, label, position ) ), " +
-        "household_contacts ( email, phone, primary_channel, contact_is, household_first_name, submitter_first_name, referral_source )",
+        "household_contacts ( email, phone, primary_channel, contact_is, household_first_name, submitter_first_name, referral_source, client_name )",
     )
     .order("referred_on", { ascending: true });
 
