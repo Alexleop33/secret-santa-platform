@@ -80,6 +80,13 @@ function signInMethods() {
   return methodsPromise;
 }
 
+// Whether to show the Google button at all, when the project has Google
+// switched on. Off since 2026-11-19: email codes are the way in, and the
+// Google consent screen was the thing sponsors reported as a scam. The
+// provider stays configured in Supabase, so flipping this back to true is
+// the whole change if the drive changes its mind.
+const OFFER_GOOGLE = false;
+
 // The address a code was sent to, while the person is typing it in.
 let pendingEmail = null;
 
@@ -101,7 +108,8 @@ function renderSignedOut(errorMessage) {
   const intro = el("p", "muted", "Loading…");
   box.appendChild(intro);
 
-  signInMethods().then((methods) => {
+  signInMethods().then((available) => {
+    const methods = { email: available.email, google: available.google && OFFER_GOOGLE };
     intro.textContent = methods.email
       ? "We'll email you a 6-digit code. No password, nothing to install. Browsing needs no account; sponsoring a family does."
       : "Sponsors and the coordinator sign in with Google. Browsing needs no account; sponsoring a family does.";
