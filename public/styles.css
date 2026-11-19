@@ -1655,6 +1655,228 @@ input[type="color"] {
   color: var(--ink-3);
 }
 
+/* Coordinator copy only (Epic #30): the "Coordinator copy" stamp and the
+   family heading that the donor's page draws for itself. */
+.coord-copy-stamp {
+  text-align: right;
+  font-size: 0.82rem;
+  color: var(--ink-3);
+  padding-bottom: 8px;
+  margin: 0 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.coord-head {
+  margin-bottom: 16px;
+}
+
+.coord-head h1 {
+  margin: 0 0 4px;
+}
+
+.coord-head p {
+  margin: 0;
+}
+
+/* The roster's Print and Open buttons, side by side. */
+.cell-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+/* Where the dashboard builds a coordinator copy. Never shown on screen. */
+.print-root {
+  display: none;
+}
+
+/* ---------- Print wish lists picker (Epic #30) ---------- */
+
+.roster-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.roster-actions .btn svg,
+.cell-actions .btn svg,
+.picker-foot .btn svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+/* A native <dialog>. Its closed state is hidden by the browser; nothing
+   here sets display, so it can't accidentally show while closed. */
+.picker {
+  width: 600px;
+  max-width: calc(100% - 32px);
+  margin: 72px auto auto;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(26, 22, 20, 0.06), 0 18px 48px rgba(26, 22, 20, 0.28);
+}
+
+.picker::backdrop {
+  background: rgba(26, 22, 20, 0.5);
+}
+
+.picker-top {
+  padding: 20px 22px 0;
+}
+
+.picker-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.picker-head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.picker-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: -6px -8px 0 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.picker-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.picker-intro {
+  margin: 6px 0 16px;
+  color: var(--ink-2);
+  font-size: 0.875rem;
+}
+
+.picker-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.picker-search {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 200px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.picker-search input {
+  width: 100%;
+  font-weight: 400;
+}
+
+.picker-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.picker-list {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.picker-list legend {
+  padding: 0 22px 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* A few hundred approved families scroll inside the dialog, so the
+   footer's Print button never leaves the screen. */
+.picker-rows {
+  max-height: min(50vh, 440px);
+  overflow-y: auto;
+  border-bottom: 1px solid var(--line);
+}
+
+.picker-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  cursor: pointer;
+}
+
+.picker-row:has(input:checked) {
+  background: var(--green-50);
+}
+
+.picker-row input {
+  width: 18px;
+  height: 18px;
+  margin: 0 0 0 8px;
+  accent-color: var(--green-700);
+  flex: none;
+}
+
+.picker-num {
+  min-width: 40px;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.picker-summary {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.875rem;
+  color: var(--ink-2);
+}
+
+.picker-empty {
+  margin: 0;
+  padding: 14px 22px;
+  color: var(--ink-2);
+  font-size: 0.875rem;
+}
+
+.picker-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 22px;
+  background: var(--cream-2);
+  border-radius: 0 0 10px 10px;
+}
+
+.picker-count {
+  margin-right: auto;
+  font-size: 0.875rem;
+  color: var(--ink-2);
+}
+
 @media print {
   .site-header,
   .site-nav,
@@ -1679,5 +1901,35 @@ input[type="color"] {
   .bag-tag,
   .tick-box {
     border-color: #000;
+  }
+
+  /* A long wish list flows onto a second sheet, but one person's sizes
+     and items are never split across the break (decided 2026-11-18). */
+  .wish-person {
+    break-inside: avoid;
+  }
+
+  /* Dashboard: only after a roster row's Print button is clicked does the
+     page swap to the coordinator copy. Pressing Cmd-P on its own still
+     prints the dashboard. */
+  body.printing-wishlist .console {
+    display: none !important;
+  }
+
+  /* The space above a family lives on each family rather than once on the
+     box around them all, so every family's first sheet starts the same. */
+  body.printing-wishlist .print-root {
+    display: block;
+    padding-top: 0;
+  }
+
+  .print-family {
+    padding-top: 28px;
+  }
+
+  /* Several families: each starts on a fresh sheet. "+" means every
+     family after the first, so there is never a blank sheet at the end. */
+  .print-family + .print-family {
+    break-before: page;
   }
 }
