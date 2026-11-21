@@ -54,14 +54,18 @@
                  can't send it into the URL; autocomplete off, so the browser
                  doesn't remember it; spellcheck off, so the browser never
                  sends it to a spelling service. Disabled until the roster
-                 loads. -->
-            <div class="roster-search">
-              <label for="roster-search" class="visually-hidden">Search the roster</label>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/></svg>
-              <input type="text" id="roster-search" autocomplete="off" spellcheck="false" placeholder="Search ID, name, provider, household or date" disabled />
-              <button type="button" class="roster-search-clear hidden" id="roster-search-clear" aria-label="Clear search">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
-              </button>
+                 loads. The chips beside it are the column filters that are
+                 on (slice 17c). -->
+            <div class="roster-tools">
+              <div class="roster-search">
+                <label for="roster-search" class="visually-hidden">Search the roster</label>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/></svg>
+                <input type="text" id="roster-search" autocomplete="off" spellcheck="false" placeholder="Search ID, name, provider, household or date" disabled />
+                <button type="button" class="roster-search-clear hidden" id="roster-search-clear" aria-label="Clear search">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+                </button>
+              </div>
+              <div class="filter-chips" id="filter-chips"></div>
             </div>
             <div id="roster"><p class="muted">Loading…</p></div>
           </section>
@@ -106,6 +110,12 @@
         <button type="button" class="btn btn-green" id="picker-print" disabled><span id="picker-print-label">Print 0 families</span></button>
       </div>
     </dialog>
+
+    <!-- The roster's four filter menus (Epic #17), one per filtered column,
+         added by dashboard.js. Each is a native popover: drawn above the
+         page when open, hidden by the browser when closed. They live out
+         here so they don't pick up the table header's capitals. -->
+    <div id="filter-menus"></div>
 
     <!-- Empty until a Print button fills it with one or more families'
          wish lists. Invisible on screen; when printing, it's the only thing

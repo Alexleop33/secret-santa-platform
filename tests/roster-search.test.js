@@ -52,6 +52,20 @@ test("the search compares text and never builds a pattern from what's typed", ()
   assert.doesNotMatch(filter, /RegExp|\.match\(|\.search\(|\.replace\(/);
 });
 
+test("the column filters see exactly Provider, Status, Sponsor and Updated", () => {
+  const squash = (text) => text.replace(/\s+/g, " ");
+  assert.ok(
+    squash(dashboard).includes('return { provider: contactOf(h)?.referral_source ?? "", status: shownStatus(h), sponsor: sponsorOf(h), updated: localDay(h.updated_at), };'),
+    "filterValues must hand over provider, status, sponsor and updated date, and nothing else",
+  );
+});
+
+// Provider names and summaries are typed by families. They're drawn with
+// textContent, which shows text as text; innerHTML would run it as markup.
+test("the dashboard only ever empties innerHTML, never fills it", () => {
+  assert.doesNotMatch(dashboard, /\.innerHTML\s*=(?!\s*""\s*;)/);
+});
+
 test("the search looks through exactly the five cells Story #12 names", () => {
   assert.ok(
     dashboard.includes('return [h.ref_code, contact?.household_first_name ?? "", contact?.referral_source ?? "", h.summary, shortDate(h.updated_at)];'),

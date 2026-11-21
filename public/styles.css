@@ -1716,12 +1716,21 @@ input[type="color"] {
   min-width: 0;
 }
 
-/* Its own row, right above the table (decided 2026-11-21). The
-   magnifier and the × sit inside the box. */
+/* Its own row, right above the table (decided 2026-11-21): the search box,
+   then a chip per filter that's on. */
+.roster-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 14px 0 12px;
+}
+
+/* The magnifier and the × sit inside the box. */
 .roster-search {
   position: relative;
+  flex: 1 1 320px;
   max-width: 460px;
-  margin: 14px 0 12px;
 }
 
 .roster-search > svg {
@@ -1791,6 +1800,182 @@ input[type="color"] {
   font-weight: 600;
   color: var(--green-700);
   cursor: pointer;
+}
+
+/* ---------- Roster column filters (Epic #17, slice 17c) ---------- */
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 10px 4px 12px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--green-100);
+  color: var(--green-700);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-chip svg,
+.filter-option svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.filter-clear-all {
+  min-height: 36px;
+  padding: 4px 6px;
+  border: 0;
+  background: none;
+  font-size: 0.87rem;
+  font-weight: 600;
+  color: var(--green-700);
+  cursor: pointer;
+}
+
+/* A filtered column's header is one big button: its label and a caret. */
+.table th.has-filter {
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-right: 6px;
+}
+
+.filter-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.filter-caret {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 4px;
+}
+
+.filter-caret svg {
+  width: 10px;
+  height: 10px;
+  fill: currentColor;
+}
+
+.filter-button:hover .filter-caret {
+  background: var(--sand);
+}
+
+/* Green once that column is filtered, as the artifact draws it. */
+.filter-button.is-active .filter-caret {
+  background: var(--green-600);
+  color: #fff;
+}
+
+/* The menus are popovers. Closed, they're hidden: by the browser, and by
+   the first rule here too, for a browser that doesn't know popovers.
+   Only :popover-open shows one, so a closed menu can't appear by
+   accident. Open, it sits above the page and dashboard.js places it. */
+.filter-menu {
+  display: none;
+  position: absolute;
+  inset: auto;
+  margin: 0;
+  width: 240px;
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.filter-menu:popover-open {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.filter-menu-heading {
+  margin: 0;
+  padding: 6px 10px 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-size: 0.92rem;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.filter-option:hover {
+  background: var(--cream);
+}
+
+.filter-option[aria-pressed="true"] {
+  background: var(--green-100);
+  color: var(--green-900);
+  font-weight: 600;
+}
+
+.filter-option svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Keeps unticked options' words lined up with the ticked one's. */
+.filter-check-space {
+  width: 14px;
+  flex: none;
+}
+
+.filter-menu-divider {
+  margin: 4px 6px;
+  border: 0;
+  border-top: 1px solid var(--line);
 }
 
 /* ---------- Print wish lists picker (Epic #30) ---------- */

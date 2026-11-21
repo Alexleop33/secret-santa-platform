@@ -41,8 +41,8 @@ test("the CSV export's column list is exactly these seven columns, in order", ()
 
 // The export is the fallback spreadsheet, so it must fail safe: more rows
 // than she expected, never fewer. It maps the whole roster, never the rows
-// the search left on screen (Epic #17).
-test("the CSV export writes every household, whatever the search shows", () => {
+// the search or the filters left on screen (Epic #17).
+test("the CSV export writes every household, whatever the search and filters show", () => {
   assert.match(exportBlock(), /const rows = households\.map\(/);
 });
 
