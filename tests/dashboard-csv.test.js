@@ -39,6 +39,13 @@ test("the CSV export's column list is exactly these seven columns, in order", ()
   );
 });
 
+// The export is the fallback spreadsheet, so it must fail safe: more rows
+// than she expected, never fewer. It maps the whole roster, never the rows
+// the search or the filters left on screen (Epic #17).
+test("the CSV export writes every household, whatever the search and filters show", () => {
+  assert.match(exportBlock(), /const rows = households\.map\(/);
+});
+
 test("the households query embeds household_contacts by named field, never a wildcard", () => {
   const match = source.match(/\.select\("id, ref_code,.*household_contacts \(([^)]*)\)"\)/);
   assert.ok(match, "expected the households query's .select(...) to still embed household_contacts");
