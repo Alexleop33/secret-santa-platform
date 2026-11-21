@@ -9,7 +9,6 @@ import { supabase } from "./auth.js";
 
 const list = document.getElementById("families");
 const sub = document.getElementById("browse-sub");
-const foot = document.getElementById("browse-foot");
 const filterSize = document.getElementById("filter-size");
 const filterAges = document.getElementById("filter-ages");
 
@@ -121,9 +120,6 @@ async function load() {
   sub.textContent = count?.sponsored != null
     ? `${need} need a sponsor · ${count.sponsored} already sponsored`
     : `${need} need a sponsor`;
-  foot.textContent = count?.sponsored
-    ? `${count.sponsored} famil${Number(count.sponsored) === 1 ? "y has" : "ies have"} already been sponsored this season. Once a household is claimed it comes straight off this list, so no one buys the same gifts twice.`
-    : "Once a household is claimed it comes straight off this list, so no one buys the same gifts twice.";
 
   render();
 }
