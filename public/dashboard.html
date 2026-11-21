@@ -37,8 +37,11 @@
           <section class="notice notice-amber hidden" id="attention"></section>
 
           <section class="card">
-            <div class="pick-top">
-              <h2>Roster</h2>
+            <div class="pick-top roster-head">
+              <div class="roster-title">
+                <h2>Roster</h2>
+                <span class="muted small" id="roster-count" role="status"></span>
+              </div>
               <div class="roster-actions">
                 <button type="button" class="btn btn-outline btn-sm" id="open-picker">Print wish lists</button>
                 <button type="button" class="btn btn-outline btn-sm" id="export">Export roster (CSV)</button>
@@ -46,6 +49,20 @@
             </div>
             <p class="muted small">Every household and every pending referral in one table. The export is the same table as a file — it carries name and provider, nothing else from a family's contact details. Print wish lists gives each family its own page, ready for shopping or sorting gifts at drop-off.</p>
             <p class="notice notice-red hidden" id="print-error" role="alert"></p>
+            <!-- The roster search (Epic #17). What's typed here can be a
+                 family's first name, so: no <form> and no name, so Enter
+                 can't send it into the URL; autocomplete off, so the browser
+                 doesn't remember it; spellcheck off, so the browser never
+                 sends it to a spelling service. Disabled until the roster
+                 loads. -->
+            <div class="roster-search">
+              <label for="roster-search" class="visually-hidden">Search the roster</label>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/></svg>
+              <input type="text" id="roster-search" autocomplete="off" spellcheck="false" placeholder="Search ID, name, provider, household or date" disabled />
+              <button type="button" class="roster-search-clear hidden" id="roster-search-clear" aria-label="Clear search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+              </button>
+            </div>
             <div id="roster"><p class="muted">Loading…</p></div>
           </section>
         </main>

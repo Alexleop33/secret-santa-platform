@@ -11,10 +11,14 @@ import { mountConsole, requireSession, formatDate } from "./console.js";
 import { toCsv, downloadCsv } from "./csv.js";
 import { renderWishList, printerIcon } from "./wishlist-print.js";
 import { byFamilyNumber, inBatches, matchesSearch, quickSelect, printLabel, selectionText } from "./print-picker.js";
+import { rowMatches, countText } from "./roster-filter.js";
 
 const root = document.getElementById("dashboard-root");
 const tiles = document.getElementById("tiles");
 const roster = document.getElementById("roster");
+const rosterCount = document.getElementById("roster-count");
+const rosterSearch = document.getElementById("roster-search");
+const rosterSearchClear = document.getElementById("roster-search-clear");
 const attention = document.getElementById("attention");
 const printRoot = document.getElementById("print-root");
 const printError = document.getElementById("print-error");
@@ -124,8 +128,28 @@ function renderTiles() {
   }
 }
 
+// "Nov 19": the Updated column, and what the search looks through for it.
+function shortDate(timestamp) {
+  return new Date(timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+// The five cells the search box looks through, as the table shows them, so
+// it can only find what's on screen. Status and sponsor are left to the
+// column filters (slice 17c).
+function searchCells(h) {
+  const contact = contactOf(h);
+  return [h.ref_code, contact?.household_first_name ?? "", contact?.referral_source ?? "", h.summary, shortDate(h.updated_at)];
+}
+
+// Redrawn on every keystroke in the search box. The box itself lives
+// outside #roster, so the cursor stays in it. The tiles, the CSV export and
+// the print picker ignore the search: they always cover the whole drive.
 function renderRoster() {
   roster.innerHTML = "";
+  const query = rosterSearch.value;
+  rosterSearchClear.classList.toggle("hidden", query === "");
+  const shown = households.filter((h) => rowMatches(searchCells(h), query));
+  rosterCount.textContent = countText(shown.length, households.length, query);
   if (!households.length) {
     roster.appendChild(el("p", "empty", "No households yet."));
     return;
@@ -137,7 +161,8 @@ function renderRoster() {
     head.appendChild(el("th", null, label));
   }
   const body = table.createTBody();
-  for (const h of households) {
+  if (!shown.length) body.insertRow().appendChild(noMatches(query));
+  for (const h of shown) {
     const row = body.insertRow();
     row.insertCell().appendChild(el("strong", null, h.ref_code));
     const contact = contactOf(h);
@@ -147,7 +172,7 @@ function renderRoster() {
     const [cls, label] = STATUS[shownStatus(h)] ?? ["pill-grey", h.status];
     row.insertCell().appendChild(el("span", `pill ${cls}`, label));
     row.insertCell().textContent = sponsorOf(h) || "—";
-    row.insertCell().textContent = new Date(h.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    row.insertCell().textContent = shortDate(h.updated_at);
     const buttons = el("div", "cell-actions");
     if (PRINTABLE.has(shownStatus(h))) {
       const print = el("button", "btn btn-outline btn-sm", "Print");
@@ -166,6 +191,33 @@ function renderRoster() {
   }
   roster.appendChild(table);
 }
+
+// The artifact's empty state, under the table's header: what found
+// nothing, where the search looks, and a way back to the whole roster.
+function noMatches(query) {
+  const cell = el("td", "roster-empty");
+  cell.colSpan = 8;
+  const clear = el("button", "roster-empty-clear", "Clear search");
+  clear.type = "button";
+  clear.onclick = clearSearch;
+  cell.append(
+    el("p", "roster-empty-title", `No families match “${query.trim()}”.`),
+    el("p", "muted", "Search looks at ID, name, provider, household and updated date."),
+    clear,
+  );
+  return cell;
+}
+
+// The × in the box and the "Clear search" button both land here. Focus
+// goes back to the box, since the button that was clicked may be gone.
+function clearSearch() {
+  rosterSearch.value = "";
+  renderRoster();
+  rosterSearch.focus();
+}
+
+rosterSearch.oninput = renderRoster;
+rosterSearchClear.onclick = clearSearch;
 
 // The coordinator's copies, for one family or many: the roster's Print
 // button and the "Print wish lists" picker both end up here. It is handed
@@ -399,6 +451,7 @@ async function load() {
     return;
   }
   households = data;
+  rosterSearch.disabled = false;
   renderTiles();
   renderRoster();
 }
