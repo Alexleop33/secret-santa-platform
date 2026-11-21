@@ -11,10 +11,16 @@ import { mountConsole, requireSession, formatDate } from "./console.js";
 import { toCsv, downloadCsv } from "./csv.js";
 import { renderWishList, printerIcon } from "./wishlist-print.js";
 import { byFamilyNumber, inBatches, matchesSearch, quickSelect, printLabel, selectionText } from "./print-picker.js";
+import { rowMatches, passesFilters, menuValues, countText, noMatchText } from "./roster-filter.js";
 
 const root = document.getElementById("dashboard-root");
 const tiles = document.getElementById("tiles");
 const roster = document.getElementById("roster");
+const rosterCount = document.getElementById("roster-count");
+const rosterSearch = document.getElementById("roster-search");
+const rosterSearchClear = document.getElementById("roster-search-clear");
+const filterChips = document.getElementById("filter-chips");
+const filterMenus = document.getElementById("filter-menus");
 const attention = document.getElementById("attention");
 const printRoot = document.getElementById("print-root");
 const printError = document.getElementById("print-error");
@@ -124,21 +130,224 @@ function renderTiles() {
   }
 }
 
-function renderRoster() {
-  roster.innerHTML = "";
-  if (!households.length) {
-    roster.appendChild(el("p", "empty", "No households yet."));
-    return;
-  }
+// "Nov 19": the Updated column, and what the search looks through for it.
+function shortDate(timestamp) {
+  return new Date(timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
+// The five cells the search box looks through, as the table shows them, so
+// it can only find what's on screen. Status and sponsor are left to the
+// column filters (slice 17c).
+function searchCells(h) {
+  const contact = contactOf(h);
+  return [h.ref_code, contact?.household_first_name ?? "", contact?.referral_source ?? "", h.summary, shortDate(h.updated_at)];
+}
+
+// "2026-11-19": the day in the coordinator's own time zone. The Updated
+// filter compares these, so all of one day's changes count as one date.
+function localDay(timestamp) {
+  const day = new Date(timestamp);
+  const two = (n) => String(n).padStart(2, "0");
+  return `${day.getFullYear()}-${two(day.getMonth() + 1)}-${two(day.getDate())}`;
+}
+
+// The four values the column filters look at. Each is what its column
+// shows, with "" standing for the column's "—".
+function filterValues(h) {
+  return {
+    provider: contactOf(h)?.referral_source ?? "",
+    status: shownStatus(h),
+    sponsor: sponsorOf(h),
+    updated: localDay(h.updated_at),
+  };
+}
+
+// The four columns with a filter menu in their header, and the words each
+// menu uses. `none` names the "" value: no provider given, no sponsor yet.
+const FILTERS = {
+  provider: { label: "Provider", heading: "Current providers", all: "All providers", none: "No provider given" },
+  status: { label: "Status", heading: "Status", all: "All statuses" },
+  sponsor: { label: "Sponsor", heading: "Sponsor", all: "All sponsors", none: "No sponsor yet" },
+  updated: { label: "Updated", heading: "Updated", all: "All dates" },
+};
+
+// The filters that are on: at most one value per column, for example
+// { status: "approved" }. Kept here in memory only, like the search.
+let filters = {};
+
+// The words a menu option or a chip shows for one of a column's values.
+function valueLabel(column, value) {
+  if (value === "") return FILTERS[column].none;
+  if (column === "status") return value === "approved" ? "Approved" : STATUS[value]?.[1] ?? value;
+  if (column === "updated") {
+    const [y, m, d] = value.split("-").map(Number);
+    return shortDate(new Date(y, m - 1, d));
+  }
+  return value;
+}
+
+// A small inline icon. SVG needs createElementNS, and this page never
+// fills innerHTML (tests/roster-search.test.js checks).
+function icon(viewBox, ...paths) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", viewBox);
+  svg.setAttribute("aria-hidden", "true");
+  for (const d of paths) {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    svg.appendChild(path);
+  }
+  return svg;
+}
+
+// The table's frame, built once: the header, with a filter menu on four
+// columns, and an empty body that renderRoster() refills. Because the
+// header is never rebuilt, a menu's button keeps keyboard focus while the
+// rows change under it.
+let rosterBody = null;
+const filterButtons = {};
+
+function buildRosterTable() {
   const table = el("table", "table");
   const head = table.createTHead().insertRow();
   for (const label of ["ID", "Name", "Provider", "Household", "Status", "Sponsor", "Updated", ""]) {
-    head.appendChild(el("th", null, label));
+    const column = label.toLowerCase(); // a filtered column's key is its label in lower case
+    const th = el("th", column in FILTERS ? "has-filter" : null);
+    if (column in FILTERS) th.appendChild(filterButton(column));
+    else th.textContent = label;
+    head.appendChild(th);
   }
-  const body = table.createTBody();
-  for (const h of households) {
-    const row = body.insertRow();
+  rosterBody = table.createTBody();
+  roster.replaceChildren(table);
+}
+
+// A header that opens its column's menu. The menu is a native popover: the
+// browser draws it above the whole page, so the table can't clip it, and
+// closes it on Escape, on a click anywhere else, or when another menu
+// opens, with no code of ours. It's filled and placed each time it opens.
+function filterButton(column) {
+  const menu = el("div", "filter-menu");
+  menu.id = `filter-menu-${column}`;
+  menu.setAttribute("popover", "auto");
+  menu.setAttribute("role", "group");
+  menu.setAttribute("aria-label", `${FILTERS[column].label} filter`);
+  filterMenus.appendChild(menu);
+
+  const button = el("button", "filter-button");
+  button.type = "button";
+  button.setAttribute("popovertarget", menu.id);
+  const caret = el("span", "filter-caret");
+  caret.appendChild(icon("0 0 10 10", "M1 3h8L5 8z"));
+  button.append(el("span", null, FILTERS[column].label), caret);
+  menu.addEventListener("beforetoggle", (event) => {
+    if (event.newState === "open") fillMenu(column, menu, button);
+  });
+  filterButtons[column] = button;
+  return button;
+}
+
+// "All ..." turns the column's filter off. Picking a value turns it on,
+// replacing whatever was picked before: one filter per column, as the
+// artifact has it. The values come from every family, not just the ones
+// on screen, so she can always switch to another.
+function fillMenu(column, menu, button) {
+  const items = [el("p", "filter-menu-heading", FILTERS[column].heading), menuOption(column, null, FILTERS[column].all, menu)];
+  for (const value of menuValues(column, households.map(filterValues))) {
+    items.push(menuOption(column, value, valueLabel(column, value), menu));
+    if (value === "approved") items.push(el("hr", "filter-menu-divider"));
+  }
+  menu.replaceChildren(...items);
+  placeMenu(menu, button);
+}
+
+function menuOption(column, value, label, menu) {
+  const on = value === null ? !(column in filters) : filters[column] === value;
+  const option = el("button", "filter-option");
+  option.type = "button";
+  option.setAttribute("aria-pressed", String(on));
+  option.append(on ? icon("0 0 24 24", "M20 6 9 17 4 12") : el("span", "filter-check-space"), el("span", null, label));
+  option.onclick = () => {
+    if (value === null) delete filters[column];
+    else filters[column] = value;
+    menu.hidePopover();
+    renderRoster();
+  };
+  return option;
+}
+
+// Just under its header button. A popover is drawn above the page but
+// positioned against the whole document, so page coordinates (where the
+// button is on screen, plus how far the page has scrolled) keep it under
+// the button as the page scrolls. Near the right edge it shifts left, so
+// all 240px of it stay on screen.
+const MENU_WIDTH = 240;
+function placeMenu(menu, button) {
+  const box = button.getBoundingClientRect();
+  const left = Math.max(8, Math.min(box.left, document.documentElement.clientWidth - MENU_WIDTH - 8));
+  menu.style.top = `${box.bottom + window.scrollY + 4}px`;
+  menu.style.left = `${left + window.scrollX}px`;
+}
+
+// Which columns are filtered: a green caret on the header, and a chip on
+// the search row for each filter that's on, e.g. "Status: Approved ×". A
+// chip removes its filter; "Clear all" removes every filter, while the
+// search box keeps its own ×.
+function renderFilterControls() {
+  for (const [column, button] of Object.entries(filterButtons)) {
+    const on = column in filters;
+    const name = FILTERS[column].label.toLowerCase();
+    button.classList.toggle("is-active", on);
+    button.setAttribute("aria-label", on ? `Filter by ${name}, now ${valueLabel(column, filters[column])}` : `Filter by ${name}`);
+  }
+  const chips = Object.keys(FILTERS)
+    .filter((column) => column in filters)
+    .map((column) => {
+      const text = `${FILTERS[column].label}: ${valueLabel(column, filters[column])}`;
+      const chip = el("button", "filter-chip");
+      chip.type = "button";
+      chip.setAttribute("aria-label", `Remove filter ${text}`);
+      chip.append(el("span", null, text), icon("0 0 24 24", "M6 6l12 12", "M18 6L6 18"));
+      chip.onclick = () => {
+        delete filters[column];
+        renderRoster();
+        rosterSearch.focus(); // the chip that was clicked is gone
+      };
+      return chip;
+    });
+  if (chips.length) chips.push(textButton("filter-clear-all", "Clear all", clearFilters));
+  filterChips.replaceChildren(...chips);
+}
+
+function textButton(className, label, onclick) {
+  const button = el("button", className, label);
+  button.type = "button";
+  button.onclick = onclick;
+  return button;
+}
+
+// Redrawn on every keystroke in the search box and every filter change.
+// Only the table's body is rebuilt: the search box and the header buttons
+// stay put, so the cursor and keyboard focus stay where they were. A row
+// shows if it matches the search and passes every filter. The tiles, the
+// CSV export and the print picker ignore both: they always cover the
+// whole drive.
+function renderRoster() {
+  const query = rosterSearch.value;
+  const filterCount = Object.keys(filters).length;
+  rosterSearchClear.classList.toggle("hidden", query === "");
+  const shown = households.filter((h) => rowMatches(searchCells(h), query) && passesFilters(filterValues(h), filters));
+  rosterCount.textContent = countText(shown.length, households.length, query, filterCount);
+  if (!households.length) {
+    roster.replaceChildren(el("p", "empty", "No households yet."));
+    return;
+  }
+
+  if (!rosterBody) buildRosterTable();
+  renderFilterControls();
+  rosterBody.replaceChildren();
+  if (!shown.length) rosterBody.insertRow().appendChild(noMatches(query, filterCount));
+  for (const h of shown) {
+    const row = rosterBody.insertRow();
     row.insertCell().appendChild(el("strong", null, h.ref_code));
     const contact = contactOf(h);
     row.insertCell().textContent = contact?.household_first_name || "—";
@@ -147,7 +356,7 @@ function renderRoster() {
     const [cls, label] = STATUS[shownStatus(h)] ?? ["pill-grey", h.status];
     row.insertCell().appendChild(el("span", `pill ${cls}`, label));
     row.insertCell().textContent = sponsorOf(h) || "—";
-    row.insertCell().textContent = new Date(h.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    row.insertCell().textContent = shortDate(h.updated_at);
     const buttons = el("div", "cell-actions");
     if (PRINTABLE.has(shownStatus(h))) {
       const print = el("button", "btn btn-outline btn-sm", "Print");
@@ -164,8 +373,40 @@ function renderRoster() {
     buttons.appendChild(open);
     row.insertCell().appendChild(buttons);
   }
-  roster.appendChild(table);
 }
+
+// The artifacts' empty state, under the table's header: what found
+// nothing, and a way back for whichever of the search and the filters
+// is on.
+function noMatches(query, filterCount) {
+  const cell = el("td", "roster-empty");
+  cell.colSpan = 8;
+  cell.appendChild(el("p", "roster-empty-title", noMatchText(query, filterCount)));
+  if (query.trim()) {
+    cell.appendChild(el("p", "muted", "Search looks at ID, name, provider, household and updated date."));
+    cell.appendChild(textButton("roster-empty-clear", "Clear search", clearSearch));
+  }
+  if (filterCount > 0) cell.appendChild(textButton("roster-empty-clear", "Clear filters", clearFilters));
+  return cell;
+}
+
+// The × in the box, "Clear search", "Clear filters" and "Clear all" land
+// here. Focus goes back to the search box, since the button that was
+// clicked may be gone.
+function clearSearch() {
+  rosterSearch.value = "";
+  renderRoster();
+  rosterSearch.focus();
+}
+
+function clearFilters() {
+  filters = {};
+  renderRoster();
+  rosterSearch.focus();
+}
+
+rosterSearch.oninput = renderRoster;
+rosterSearchClear.onclick = clearSearch;
 
 // The coordinator's copies, for one family or many: the roster's Print
 // button and the "Print wish lists" picker both end up here. It is handed
@@ -399,6 +640,7 @@ async function load() {
     return;
   }
   households = data;
+  rosterSearch.disabled = false;
   renderTiles();
   renderRoster();
 }
