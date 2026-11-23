@@ -43,17 +43,63 @@ test("the box opens only when the check finds something", () => {
 test("the note goes to the check in a request body, never in the URL", () => {
   // rpc() sends a POST unless told { get: true }, which would put the note
   // into the query string.
-  assert.ok(js.includes('supabase.rpc("identifying_text_problem", { p_text: note.value })'));
+  assert.ok(js.includes('supabase.rpc("identifying_text_problem", { p_text: text })'));
   assert.doesNotMatch(js, /get:\s*true/);
+});
+
+test("the text that's checked is the text that's saved", () => {
+  const block = functionBlock("checkThenSave");
+  const read = "const text = note.value;";
+  const readAt = block.indexOf(read);
+  assert.ok(readAt >= 0 && readAt < block.indexOf("await "), "the box is read once, before the check");
+  assert.equal(block.match(/saveAdminNote\(id, text, status\)/g).length, 2, "both saves use the checked text");
+  assert.doesNotMatch(block.slice(readAt + read.length), /note\.value/, "the box is never read again after the check");
 });
 
 test("the box names what kind of detail it found, never the detail itself", () => {
   assert.ok(js.includes("noteCheckFound.textContent = `This note looks like it contains ${found}.`;"));
 });
 
+// ---------- Slice 27b: the note stays open once a family is approved ----------
+// supabase/tests/admin_note_after_decision.sql proves the database side.
+
+function renderDetailBlock() {
+  const start = js.indexOf("function renderDetail(");
+  return js.slice(start, js.indexOf("\n}\n", start));
+}
+
+test("the note box is open for pending and approved families, locked for the rest", () => {
+  const render = renderDetailBlock();
+  assert.ok(render.includes('const editable = household.status === "pending_review" || household.status === "live";'));
+  assert.ok(render.includes("note.disabled = !editable;"));
+});
+
+test("Save note comes with the box wherever it's open, not only on pending referrals", () => {
+  const render = renderDetailBlock();
+  const editableAt = render.indexOf("if (editable) {");
+  const saveAt = render.indexOf('el("button", "btn btn-outline btn-sm", "Save note")');
+  const pendingAt = render.indexOf("if (pending) {");
+  assert.ok(editableAt >= 0, "renderDetail must build the note's controls inside if (editable)");
+  assert.ok(saveAt > editableAt && saveAt < pendingAt, "Save note must be built inside if (editable), before the pending-only decisions");
+});
+
+test("Keep it live puts the buttons back without redrawing, so an unsaved note survives", () => {
+  assert.doesNotMatch(renderDetailBlock(), /cancel\.onclick = \(\) => renderDetail\(/);
+});
+
+test("'Note saved.' comes from the database: the save asks for the row back", () => {
+  const block = functionBlock("saveAdminNote");
+  assert.ok(block.includes('.update({ admin_note: note }).eq("id", id).select("id")'));
+  const emptyAt = block.indexOf("if (!data.length) {");
+  assert.ok(emptyAt >= 0, "an empty answer must be handled");
+  assert.ok(block.indexOf('"Note saved."') > emptyAt, "'Note saved.' only after the empty case is ruled out");
+});
+
 test("the box is a native dialog whose default is going back to edit", () => {
   const dialog = html.match(/<dialog[^>]*id="note-check"[\s\S]*?<\/dialog>/)?.[0];
   assert.ok(dialog, "queue.html must have the note-check dialog");
+  // A screen reader reads the message (which kind of detail) as the box opens.
+  assert.match(dialog, /<dialog[^>]*aria-describedby="note-check-found"/);
   assert.match(dialog, /<button[^>]*id="note-check-back"[^>]*autofocus/);
   assert.match(dialog, /<button[^>]*id="note-check-save"/);
 });
