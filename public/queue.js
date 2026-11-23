@@ -17,6 +17,10 @@ const pendingList = document.getElementById("pending-list");
 const pendingHeading = document.getElementById("pending-heading");
 const detail = document.getElementById("detail");
 const decided = document.getElementById("decided");
+const noteCheck = document.getElementById("note-check");
+const noteCheckFound = document.getElementById("note-check-found");
+const noteCheckBack = document.getElementById("note-check-back");
+const noteCheckSave = document.getElementById("note-check-save");
 
 let households = [];
 let selectedId = null;
@@ -232,7 +236,7 @@ function renderDetail(household) {
   if (pending) {
     const saveNote = el("button", "btn btn-outline btn-sm", "Save note");
     saveNote.type = "button";
-    saveNote.onclick = () => saveAdminNote(household.id, note.value, status);
+    saveNote.onclick = () => checkThenSave(household.id, note, status);
     actions.append(saveNote, status);
     decideCard.appendChild(actions);
 
@@ -361,6 +365,36 @@ async function load() {
   }
   renderLists();
   renderDetail(households.find((h) => h.id === selectedId) ?? null);
+}
+
+// The soft stop (decided with Alex 2026-11-22). Before saving, the note
+// goes to the database's own identifying_text_problem(), the check the
+// referral form runs on a family's words. If it finds a phone number, an
+// email or a street address, a confirmation box says which kind and she
+// decides: go back and edit, or save anyway. If it finds nothing, the note
+// saves with no box. rpc() sends the note in a POST body, never in the URL.
+async function checkThenSave(id, note, status) {
+  status.textContent = "Checking…";
+  const { data: found, error } = await supabase.rpc("identifying_text_problem", { p_text: note.value });
+  if (error) {
+    status.textContent = `Not saved: couldn't check the note (${error.message}).`;
+    return;
+  }
+  if (!found) {
+    saveAdminNote(id, note.value, status);
+    return;
+  }
+  status.textContent = "";
+  noteCheckFound.textContent = `This note looks like it contains ${found}.`;
+  noteCheckBack.onclick = () => {
+    noteCheck.close();
+    note.focus();
+  };
+  noteCheckSave.onclick = () => {
+    noteCheck.close();
+    saveAdminNote(id, note.value, status);
+  };
+  noteCheck.showModal();
 }
 
 async function saveAdminNote(id, note, status) {

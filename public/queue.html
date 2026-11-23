@@ -38,6 +38,21 @@
       </div>
     </div>
 
+    <!-- The soft stop on the coordinator's note (Epic #27). It opens only
+         when the database's check finds a phone number, an email or a
+         street address in the note, and names which kind, never the
+         detail itself. A native <dialog>: Escape closes it, which counts
+         as going back. -->
+    <dialog class="note-check" id="note-check" aria-labelledby="note-check-title">
+      <h2 id="note-check-title">Sensitive information in this note</h2>
+      <p id="note-check-found"></p>
+      <p class="muted small">Notes are for things like sizes, calls and drop-off plans. Please keep families' phone numbers, emails and addresses out of them.</p>
+      <div class="note-check-foot">
+        <button type="button" class="btn btn-green" id="note-check-back" autofocus>Go back and edit</button>
+        <button type="button" class="btn btn-outline" id="note-check-save">Save anyway</button>
+      </div>
+    </dialog>
+
     <script src="/redirect.js"></script>
     <script src="/env.js"></script>
     <script type="module" src="brand.js"></script>
