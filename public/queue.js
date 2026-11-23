@@ -1,7 +1,9 @@
 // The approval queue (A2): referrals waiting on the left, the selected one
 // on the right exactly as sponsors would see it, a set of automatic checks,
-// a private note, and the decision. Approved and rejected households sit
-// below in folding sections and open in the same pane, read-only.
+// a private note, and the decision. Approved, rejected and withdrawn
+// households sit below in folding sections and open in the same pane.
+// Everything there is read-only except the coordinator's note on an
+// approved family, which stays open (Epic #27).
 //
 // Nothing here checks who the caller is. The database returns households
 // only to the admin; for anyone else every list is simply empty.
@@ -17,6 +19,10 @@ const pendingList = document.getElementById("pending-list");
 const pendingHeading = document.getElementById("pending-heading");
 const detail = document.getElementById("detail");
 const decided = document.getElementById("decided");
+const noteCheck = document.getElementById("note-check");
+const noteCheckFound = document.getElementById("note-check-found");
+const noteCheckBack = document.getElementById("note-check-back");
+const noteCheckSave = document.getElementById("note-check-save");
 
 let households = [];
 let selectedId = null;
@@ -162,6 +168,11 @@ function renderDetail(household) {
   }
 
   const pending = household.status === "pending_review";
+  // Her note stays open from the moment a referral arrives until the family
+  // is rejected or withdrawn: pending, and approved (live), which includes
+  // sponsored and delivered, since a claim never changes the household's
+  // status. The database allows exactly these two (Epic #27).
+  const editable = household.status === "pending_review" || household.status === "live";
 
   // Header: the code, the status, when it came in.
   const head = el("div", "card");
@@ -223,19 +234,22 @@ function renderDetail(household) {
   noteLabel.appendChild(el("span", null, "Note to self (private, never shown to anyone else)"));
   const note = el("textarea");
   note.value = household.admin_note;
-  note.disabled = !pending;
+  note.disabled = !editable;
   noteLabel.appendChild(note);
   decideCard.appendChild(noteLabel);
 
-  const actions = el("div", "form-actions");
-  const status = el("span", "status-line");
-  if (pending) {
+  if (editable) {
+    const noteActions = el("div", "form-actions");
+    const status = el("span", "status-line");
     const saveNote = el("button", "btn btn-outline btn-sm", "Save note");
     saveNote.type = "button";
-    saveNote.onclick = () => saveAdminNote(household.id, note.value, status);
-    actions.append(saveNote, status);
-    decideCard.appendChild(actions);
+    saveNote.onclick = () => checkThenSave(household.id, note, status);
+    noteActions.append(saveNote, status);
+    decideCard.append(noteActions, el("p", "muted small", "You can keep adding to this note after the family is approved and sponsored."));
+  }
 
+  const actions = el("div", "form-actions");
+  if (pending) {
     const decisions = el("div", "form-actions");
     const approve = el("button", "btn btn-green", "Approve & publish");
     approve.type = "button";
@@ -272,7 +286,13 @@ function renderDetail(household) {
       confirm.classList.remove("hidden");
       cancel.classList.remove("hidden");
     };
-    cancel.onclick = () => renderDetail(household);
+    // Put the buttons back rather than redrawing the record: a redraw would
+    // throw away anything typed in the note and not yet saved.
+    cancel.onclick = () => {
+      confirm.classList.add("hidden");
+      cancel.classList.add("hidden");
+      withdraw.classList.remove("hidden");
+    };
     confirm.onclick = () => decide(household.id, "withdrawn");
     actions.append(withdraw, confirm, cancel);
     decideCard.appendChild(actions);
@@ -363,14 +383,59 @@ async function load() {
   renderDetail(households.find((h) => h.id === selectedId) ?? null);
 }
 
+// The soft stop (decided with Alex 2026-11-22). Before saving, the note
+// goes to the database's own identifying_text_problem(), the check the
+// referral form runs on a family's words. If it finds a phone number, an
+// email or a street address, a confirmation box says which kind and she
+// decides: go back and edit, or save anyway. If it finds nothing, the note
+// saves with no box. rpc() sends the note in a POST body, never in the URL.
+async function checkThenSave(id, note, status) {
+  // Read the box once: the text that's checked is the text that's saved,
+  // even if she keeps typing while the check is on its way.
+  const text = note.value;
+  status.textContent = "Checking…";
+  const { data: found, error } = await supabase.rpc("identifying_text_problem", { p_text: text });
+  if (error) {
+    status.textContent = `Not saved: couldn't check the note (${error.message}).`;
+    return;
+  }
+  if (!found) {
+    saveAdminNote(id, text, status);
+    return;
+  }
+  status.textContent = "";
+  noteCheckFound.textContent = `This note looks like it contains ${found}.`;
+  noteCheckBack.onclick = () => {
+    noteCheck.close();
+    note.focus();
+  };
+  noteCheckSave.onclick = () => {
+    noteCheck.close();
+    saveAdminNote(id, text, status);
+  };
+  // A double-click can get here twice; opening an open dialog throws in
+  // some browsers.
+  if (!noteCheck.open) noteCheck.showModal();
+}
+
+// "Note saved." only once the database hands the saved row back. Row-level
+// security answers a save it refuses with no row rather than an error: a
+// family rejected or withdrawn since the page loaded, or a sign-in that
+// has expired. So an empty answer means nothing was saved.
 async function saveAdminNote(id, note, status) {
   status.textContent = "Saving…";
-  const { error } = await supabase.from("households").update({ admin_note: note }).eq("id", id);
-  status.textContent = error ? `Not saved: ${error.message}` : "Note saved.";
-  if (!error) {
-    const household = households.find((h) => h.id === id);
-    if (household) household.admin_note = note;
+  const { data, error } = await supabase.from("households").update({ admin_note: note }).eq("id", id).select("id");
+  if (error) {
+    status.textContent = `Not saved: ${error.message}`;
+    return;
   }
+  if (!data.length) {
+    status.textContent = "Not saved. Reload the page: this family may have changed, or your sign-in may have expired.";
+    return;
+  }
+  status.textContent = "Note saved.";
+  const household = households.find((h) => h.id === id);
+  if (household) household.admin_note = note;
 }
 
 // Re-fetching afterwards is what proves the write landed: the row shows
